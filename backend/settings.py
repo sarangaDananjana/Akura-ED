@@ -105,9 +105,9 @@ SIMPLE_JWT = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'flashcard_db'),
-        'USER': os.environ.get('DB_USER', 'flashcard_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'flashcard_password'),
+        'NAME': os.environ.get('DB_NAME', 'akura_db'),
+        'USER': os.environ.get('DB_USER', 'akura_user'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'akura_password'),
         # Resolves to the docker container name
         'HOST': os.environ.get('DB_HOST', 'db'),
         'PORT': os.environ.get('DB_PORT', '5432'),

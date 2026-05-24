@@ -5,49 +5,45 @@ services:
     image: postgres:15-alpine
     restart: always
     environment:
-      - POSTGRES_USER=flashcard_user
-      - POSTGRES_PASSWORD=flashcard_password
-      - POSTGRES_DB=flashcard_db
+      - POSTGRES_USER=akura_user
+      - POSTGRES_PASSWORD=akura_password
+      - POSTGRES_DB=akura_db
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - "5432:5432"
+
+  mongo:
+    # MongoDB doesn't have an official Alpine image, so we use the standard one. 
+    # It will automatically be pulled and used as your lightweight local Mongo instance.
+    image: mongo:latest
+    restart: always
+    volumes:
+      - mongo_data:/data/db
 
   web:
     build: .
+    restart: always
+    # Binding to 127.0.0.1 means the host's Nginx can access it safely without exposing it directly to the public internet.
+    ports:
+      - "127.0.0.1:8000:8000"
     command: sh -c "python manage.py collectstatic --noinput && python manage.py makemigrations && python manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:8000"
     volumes:
-      - .:/app
-      - static_volume:/app/staticfiles
-      - media_volume:/app/media
-    expose:
-      - "8000"
+      - media_data:/app/media
+      - static_data:/app/staticfiles
     env_file:
       - .env
     environment:
-      - DB_NAME=flashcard_db
-      - DB_USER=flashcard_user
-      - DB_PASSWORD=flashcard_password
+      - DB_NAME=akura_db
+      - DB_USER=akura_user
+      - DB_PASSWORD=akura_password
       - DB_HOST=db
       - DB_PORT=5432
-      - MONGO_URI=${MONGO_URI}
+      - MONGO_URI=mongodb://mongo:27017/akura_mongo
     depends_on:
       - db
-
-  nginx:
-    image: nginx:latest
-    restart: always
-    ports:
-      - "8080:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/sites-enabled:/etc/nginx/sites-enabled:ro
-      - static_volume:/app/staticfiles
-      - media_volume:/app/media
-    depends_on:
-      - web
+      - mongo
 
 volumes:
   postgres_data:
-  static_volume:
-  media_volume:
+  mongo_data:
+  media_data:
+  static_data:
