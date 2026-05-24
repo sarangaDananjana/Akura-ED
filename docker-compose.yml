@@ -4,10 +4,12 @@ services:
   db:
     image: postgres:15-alpine
     restart: always
+    env_file:
+      - .env
     environment:
-      - POSTGRES_USER=akura_user
-      - POSTGRES_PASSWORD=akura_password
-      - POSTGRES_DB=akura_db
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data/
 
@@ -31,13 +33,6 @@ services:
       - static_data:/app/staticfiles
     env_file:
       - .env
-    environment:
-      - DB_NAME=akura_db
-      - DB_USER=akura_user
-      - DB_PASSWORD=akura_password
-      - DB_HOST=db
-      - DB_PORT=5432
-      - MONGO_URI=mongodb://mongo:27017/akura_mongo
     depends_on:
       - db
       - mongo
