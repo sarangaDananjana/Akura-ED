@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akura Admin - Login</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Premium Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body
+    class="bg-slate-50 h-screen flex items-center justify-center font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Subtle Background Elements for Premium Feel -->
+    <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-1/2 -right-1/4 w-[1000px] h-[1000px] rounded-full bg-indigo-50/50 blur-3xl"></div>
+        <div class="absolute -bottom-1/2 -left-1/4 w-[800px] h-[800px] rounded-full bg-slate-100/50 blur-3xl"></div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-md px-6">
+        <!-- Logo & Branding -->
+        <div class="text-center mb-8">
+            <div
+                class="mx-auto w-20 h-20 bg-slate-900 rounded-2xl shadow-xl shadow-slate-900/20 mb-6 overflow-hidden flex items-center justify-center border border-slate-800">
+                <!-- Using your logo here. Object-cover ensures it fits the sleek rounded box -->
+                <img src="Logo - 123.jpg" alt="Akura Logo"
+                    class="w-full h-full object-cover opacity-90 mix-blend-lighten">
+            </div>
+            <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Akura Institute</h2>
+            <p class="text-slate-500 mt-2 text-sm font-medium">Sign in to the master admin dashboard</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/5">
+
+            <!-- Error Message Container -->
+            <div id="errorMessage"
+                class="hidden bg-red-50 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm border border-red-100 flex items-start gap-3 transition-all"
+                role="alert">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="block sm:inline font-medium" id="errorText"></span>
+            </div>
+
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label for="username" class="block text-sm font-semibold text-slate-700 mb-1.5">Username</label>
+                    <input type="text" id="username" name="username" required
+                        class="block w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all sm:text-sm">
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label for="password" class="block text-sm font-semibold text-slate-700">Password</label>
+                    </div>
+                    <input type="password" id="password" name="password" required
+                        class="block w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all sm:text-sm">
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit"
+                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-all">
+                        Sign in to Dashboard
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <p class="text-center text-xs text-slate-400 mt-8 font-medium">
+            &copy; 2026 Akura Educational Institute. All rights reserved.
+        </p>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+
+            errorDiv.classList.add('hidden');
+            const btn = this.querySelector('button[type="submit"]');
+            btn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Signing in...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/users/auth/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('access_token', data.access);
+                    localStorage.setItem('refresh_token', data.refresh);
+                    window.location.href = '/custom-admin/dashboard/';
+                } else {
+                    errorText.textContent = data.detail || 'Invalid username or password.';
+                    errorDiv.classList.remove('hidden');
+                    btn.innerHTML = 'Sign in to Dashboard';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorText.textContent = 'A network error occurred. Is the server running?';
+                errorDiv.classList.remove('hidden');
+                btn.innerHTML = 'Sign in to Dashboard';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>
