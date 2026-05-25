@@ -1,240 +1,2028 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akura ED - Next Gen Learning Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <title>Akura Educational Institute — Exam Podda</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,600&family=Sora:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <style>
-        :root {
-            --primary: #4F46E5;
-            --secondary: #EC4899;
-            --bg: #0F172A;
-            --surface: #1E293B;
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-        }
-
-        * {
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Outfit', sans-serif;
+        }
+
+        :root {
+            --bg: #F7F5F0;
+            --white: #FDFCFA;
+            --ink: #0C0C0A;
+            --ink2: #1E1E1B;
+            --forest: #1A3D2B;
+            --forest2: #2C5C3F;
+            --muted: #6A6860;
+            --border: #D4D0C8;
+            --surface: #EDEAE2;
+            --rule: 1px solid var(--border);
+            --ff-serif: 'Fraunces', Georgia, serif;
+            --ff-sans: 'Sora', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--text-main);
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--ff-sans);
+            font-weight: 400;
+            line-height: 1.65;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .navbar {
-            padding: 2rem 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(10px);
+        /* subtle paper grain */
+        body::before {
+            content: '';
             position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 100;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.6;
         }
 
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            color: transparent;
+        /* ── NAV ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            border-bottom: var(--rule);
+            background: rgba(247, 245, 240, 0.92);
+            backdrop-filter: blur(12px);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+
+        /* ── LOGO SLOT ── */
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* The uploaded logo image will be placed here via inline img */
+        .logo-mark img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            filter: brightness(0);
+        }
+
+        /* fallback SVG if no img present */
+        .logo-mark svg {
+            display: block;
+        }
+
+        .nav-wordmark {
+            font-family: var(--ff-serif);
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .nav-wordmark small {
+            display: block;
+            font-family: var(--ff-sans);
+            font-size: 9px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            list-style: none;
         }
 
         .nav-links a {
-            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.2px;
+            color: var(--muted);
             text-decoration: none;
-            margin-left: 2rem;
-            font-weight: 600;
-            transition: color 0.3s;
+            transition: color 0.2s;
         }
 
         .nav-links a:hover {
-            color: var(--secondary);
+            color: var(--ink);
         }
 
+        .nav-btn {
+            font-family: var(--ff-sans);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--white) !important;
+            background: var(--ink);
+            padding: 9px 20px;
+            border-radius: 2px;
+            transition: background 0.2s !important;
+        }
+
+        .nav-btn:hover {
+            background: var(--forest) !important;
+            color: var(--white) !important;
+        }
+
+        /* ── HERO ── */
         .hero {
             min-height: 100vh;
+            padding: 140px 48px 80px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 5%;
+            justify-content: flex-end;
+            border-bottom: var(--rule);
             position: relative;
+            overflow: hidden;
         }
 
-        .hero::before {
-            content: '';
+        .hero-tag {
             position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(79, 70, 229, 0.2) 0%, transparent 70%);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: -1;
+            top: 80px;
+            right: 48px;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 400;
         }
 
-        h1 {
-            font-size: 4.5rem;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            animation: slideUp 1s ease-out forwards;
-            opacity: 0;
-        }
-
-        .highlight {
-            color: var(--secondary);
-            position: relative;
-        }
-
-        p.subtitle {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            max-width: 600px;
-            margin-bottom: 2.5rem;
-            animation: slideUp 1s ease-out 0.2s forwards;
-            opacity: 0;
-        }
-
-        .cta-group {
-            display: flex;
-            gap: 1rem;
-            animation: slideUp 1s ease-out 0.4s forwards;
-            opacity: 0;
-        }
-
-        .btn {
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            font-size: 1.1rem;
+        .hero-label {
+            font-family: var(--ff-sans);
+            font-size: 11px;
             font-weight: 600;
-            text-decoration: none;
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--forest);
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), #6366f1);
-            color: white;
-            border: none;
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        .hero-label::before {
+            content: '';
+            display: block;
+            width: 24px;
+            height: 1px;
+            background: var(--forest);
         }
 
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 25px rgba(79, 70, 229, 0.4);
+        .hero-headline {
+            font-family: var(--ff-serif);
+            font-size: clamp(52px, 8vw, 116px);
+            font-weight: 300;
+            line-height: 0.95;
+            letter-spacing: -3px;
+            color: var(--ink);
+            max-width: 1100px;
+            margin-bottom: 64px;
         }
 
-        .btn-outline {
-            background: transparent;
-            color: var(--text-main);
-            border: 2px solid var(--surface);
+        .hero-headline em {
+            font-style: italic;
+            font-weight: 300;
+            color: var(--forest);
         }
 
-        .btn-outline:hover {
-            border-color: var(--secondary);
-            transform: translateY(-3px);
-        }
-
-        .features {
-            padding: 5rem 5%;
+        .hero-bottom {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+            grid-template-columns: 1fr auto;
+            align-items: end;
+            gap: 60px;
+            padding-top: 48px;
+            border-top: var(--rule);
         }
 
-        .feature-card {
-            background: var(--surface);
-            padding: 2.5rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: transform 0.3s, background 0.3s;
+        .hero-desc {
+            max-width: 440px;
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.8;
+            font-weight: 300;
         }
 
-        .feature-card:hover {
-            transform: translateY(-10px);
-            background: rgba(30, 41, 59, 0.8);
-            border-color: rgba(236, 72, 153, 0.3);
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-shrink: 0;
         }
 
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
+        .btn-dark {
+            font-family: var(--ff-sans);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--white);
+            background: var(--ink);
+            padding: 14px 28px;
+            border: none;
+            border-radius: 2px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s;
             display: inline-block;
         }
 
-        .feature-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+        .btn-dark:hover {
+            background: var(--forest);
         }
 
-        .feature-card p {
-            color: var(--text-muted);
+        .btn-outline {
+            font-family: var(--ff-sans);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--ink);
+            background: transparent;
+            padding: 13px 28px;
+            border: var(--rule);
+            border-color: var(--border);
+            border-radius: 2px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+            display: inline-block;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--ink);
+        }
+
+        /* ── STATS STRIP ── */
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border-bottom: var(--rule);
+        }
+
+        .stat-block {
+            padding: 40px 48px;
+            border-right: var(--rule);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .stat-block:last-child {
+            border-right: none;
+        }
+
+        .stat-block.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stat-n {
+            font-family: var(--ff-serif);
+            font-size: 52px;
+            font-weight: 300;
+            letter-spacing: -2px;
+            line-height: 1;
+            color: var(--ink);
+            margin-bottom: 6px;
+        }
+
+        .stat-n span {
+            font-style: italic;
+            color: var(--forest);
+        }
+
+        .stat-l {
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--muted);
+            letter-spacing: 0.2px;
+            line-height: 1.5;
+        }
+
+        /* ── MARQUEE ── */
+        .marquee-wrap {
+            overflow: hidden;
+            border-bottom: var(--rule);
+            background: var(--ink);
+            padding: 14px 0;
+        }
+
+        .marquee-track {
+            display: flex;
+            gap: 0;
+            animation: marquee 30s linear infinite;
+            white-space: nowrap;
+        }
+
+        .marquee-track span {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(247, 245, 240, 0.5);
+            padding: 0 32px;
+        }
+
+        .marquee-track span.accent {
+            color: var(--bg);
+        }
+
+        .marquee-sep {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(247, 245, 240, 0.2);
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0 8px;
+        }
+
+        @keyframes marquee {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* ── SECTION BASE ── */
+        .wrap {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 48px;
+        }
+
+        .label-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 48px;
+        }
+
+        .label-row::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── ABOUT ── */
+        .about-section {
+            padding: 100px 0;
+            border-bottom: var(--rule);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: start;
+        }
+
+        .about-left h2 {
+            font-family: var(--ff-serif);
+            font-size: clamp(32px, 3.5vw, 52px);
+            font-weight: 400;
+            line-height: 1.15;
+            letter-spacing: -1px;
+            margin-bottom: 28px;
+            color: var(--ink);
+        }
+
+        .about-left h2 em {
+            font-style: italic;
+            color: var(--forest);
+        }
+
+        .about-left p {
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.85;
+            font-weight: 300;
+            margin-bottom: 16px;
+            max-width: 460px;
+        }
+
+        .about-right {
+            padding-top: 8px;
+        }
+
+        .about-num-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .about-num-item {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 24px;
+            padding: 28px 0;
+            border-top: var(--rule);
+            align-items: baseline;
+        }
+
+        .about-num-item:last-child {
+            border-bottom: var(--rule);
+        }
+
+        .num-big {
+            font-family: var(--ff-serif);
+            font-size: 42px;
+            font-weight: 300;
+            letter-spacing: -1.5px;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .num-big em {
+            font-style: italic;
+            color: var(--forest);
+        }
+
+        .num-text h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 4px;
+            letter-spacing: -0.2px;
+        }
+
+        .num-text p {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 300;
             line-height: 1.6;
         }
 
-        @keyframes slideUp {
-            from {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-            to {
+        /* ── FEATURES ── */
+        .features-section {
+            padding: 100px 0;
+            border-bottom: var(--rule);
+        }
+
+        .features-head {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            margin-bottom: 64px;
+            align-items: end;
+        }
+
+        .features-head h2 {
+            font-family: var(--ff-serif);
+            font-size: clamp(32px, 3.5vw, 52px);
+            font-weight: 400;
+            line-height: 1.15;
+            letter-spacing: -1px;
+            color: var(--ink);
+        }
+
+        .features-head h2 em {
+            font-style: italic;
+            color: var(--forest);
+        }
+
+        .features-head p {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.85;
+            font-weight: 300;
+            align-self: end;
+        }
+
+        .features-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 1fr auto;
+            gap: 40px;
+            padding: 36px 0;
+            border-top: var(--rule);
+            align-items: start;
+            transition: background 0.2s;
+            cursor: default;
+        }
+
+        .feature-row:last-child {
+            border-bottom: var(--rule);
+        }
+
+        .feature-row:hover {
+            background: var(--surface);
+            margin: 0 -48px;
+            padding-left: 48px;
+            padding-right: 48px;
+        }
+
+        .feat-num {
+            font-family: var(--ff-serif);
+            font-size: 13px;
+            font-style: italic;
+            color: var(--muted);
+            font-weight: 300;
+            padding-top: 3px;
+        }
+
+        .feat-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.3px;
+            line-height: 1.4;
+        }
+
+        .feat-desc {
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 300;
+            line-height: 1.75;
+        }
+
+        .feat-tag {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 5px 12px;
+            border-radius: 1px;
+            white-space: nowrap;
+            align-self: start;
+        }
+
+        .tag-green {
+            background: #D4E8DC;
+            color: var(--forest);
+        }
+
+        .tag-dark {
+            background: var(--surface);
+            color: var(--muted);
+            border: var(--rule);
+        }
+
+        .tag-ink {
+            background: var(--ink);
+            color: var(--bg);
+        }
+
+        /* ── LEADERBOARD ── */
+        .lb-section {
+            padding: 100px 0;
+            border-bottom: var(--rule);
+        }
+
+        .lb-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 80px;
+            align-items: start;
+        }
+
+        .lb-left h2 {
+            font-family: var(--ff-serif);
+            font-size: clamp(32px, 3.5vw, 52px);
+            font-weight: 400;
+            line-height: 1.15;
+            letter-spacing: -1px;
+            color: var(--ink);
+            margin-bottom: 20px;
+        }
+
+        .lb-left h2 em {
+            font-style: italic;
+            color: var(--forest);
+        }
+
+        .lb-left p {
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 300;
+            line-height: 1.85;
+            margin-bottom: 36px;
+            max-width: 360px;
+        }
+
+        .lb-table {
+            width: 100%;
+        }
+
+        .lb-table-head {
+            display: grid;
+            grid-template-columns: 40px 1fr 90px 80px;
+            gap: 16px;
+            padding: 0 0 12px;
+            border-bottom: var(--rule);
+        }
+
+        .lb-th {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .lb-rows {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lb-r {
+            display: grid;
+            grid-template-columns: 40px 1fr 90px 80px;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: var(--rule);
+            align-items: center;
+            transition: background 0.15s;
+        }
+
+        .lb-r:hover {
+            background: var(--surface);
+            margin: 0 -20px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .lb-pos {
+            font-family: var(--ff-serif);
+            font-size: 14px;
+            font-style: italic;
+            color: var(--muted);
+            font-weight: 300;
+        }
+
+        .lb-pos.top {
+            color: var(--forest);
+            font-weight: 600;
+            font-style: normal;
+            font-family: var(--ff-sans);
+            font-size: 12px;
+        }
+
+        .lb-ident {}
+
+        .lb-ident-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.2px;
+        }
+
+        .lb-ident-sub {
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 300;
+            margin-top: 1px;
+        }
+
+        .lb-acc {
+            font-size: 13px;
+            color: var(--ink);
+            font-weight: 500;
+        }
+
+        .lb-pts {
+            font-family: var(--ff-serif);
+            font-size: 20px;
+            font-weight: 300;
+            letter-spacing: -0.5px;
+            color: var(--ink);
+            text-align: right;
+        }
+
+        /* ── HOW IT WORKS ── */
+        .how-section {
+            padding: 100px 0;
+            border-bottom: var(--rule);
+            background: var(--white);
+        }
+
+        .how-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+        }
+
+        .how-step {
+            padding: 48px;
+            border-right: var(--rule);
+            position: relative;
+        }
+
+        .how-step:last-child {
+            border-right: none;
+        }
+
+        .step-index {
+            font-family: var(--ff-serif);
+            font-size: 11px;
+            font-style: italic;
+            color: var(--muted);
+            margin-bottom: 32px;
+            display: block;
+        }
+
+        .step-icon-box {
+            width: 44px;
+            height: 44px;
+            border: var(--rule);
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .step-icon-box svg {
+            stroke: var(--ink);
+        }
+
+        .how-step h3 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.3px;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .how-step p {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 300;
+            line-height: 1.75;
+        }
+
+        /* ── BADGES ── */
+        .badges-section {
+            padding: 100px 0;
+            border-bottom: var(--rule);
+        }
+
+        .badges-head {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: end;
+            margin-bottom: 64px;
+        }
+
+        .badges-head h2 {
+            font-family: var(--ff-serif);
+            font-size: clamp(32px, 3.5vw, 52px);
+            font-weight: 400;
+            line-height: 1.15;
+            letter-spacing: -1px;
+            color: var(--ink);
+        }
+
+        .badges-head h2 em {
+            font-style: italic;
+            color: var(--forest);
+        }
+
+        .badges-head p {
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 300;
+            line-height: 1.85;
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0;
+            border: var(--rule);
+        }
+
+        .badge-item {
+            padding: 32px 24px;
+            border-right: var(--rule);
+            border-bottom: var(--rule);
+            transition: background 0.2s;
+            cursor: default;
+        }
+
+        .badge-item:nth-child(6n) {
+            border-right: none;
+        }
+
+        .badge-item:nth-last-child(-n+6) {
+            border-bottom: none;
+        }
+
+        .badge-item:hover {
+            background: var(--surface);
+        }
+
+        .badge-sym {
+            width: 36px;
+            height: 36px;
+            border: var(--rule);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .badge-sym svg {
+            stroke: var(--ink);
+        }
+
+        .badge-item h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.2px;
+            margin-bottom: 4px;
+        }
+
+        .badge-item p {
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 300;
+            line-height: 1.55;
+        }
+
+        /* ── AI COMING SOON ── */
+        .ai-section {
+            padding: 100px 0;
+            border-bottom: var(--rule);
+        }
+
+        .ai-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .ai-text h2 {
+            font-family: var(--ff-serif);
+            font-size: clamp(36px, 4vw, 60px);
+            font-weight: 400;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            color: var(--ink);
+            margin-bottom: 20px;
+        }
+
+        .ai-text h2 em {
+            font-style: italic;
+            color: var(--forest);
+        }
+
+        .ai-text p {
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 300;
+            line-height: 1.85;
+            margin-bottom: 36px;
+            max-width: 400px;
+        }
+
+        .ai-feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .ai-feat {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 20px 0;
+            border-top: var(--rule);
+        }
+
+        .ai-feat:last-child {
+            border-bottom: var(--rule);
+        }
+
+        .ai-feat-num {
+            font-family: var(--ff-serif);
+            font-size: 12px;
+            font-style: italic;
+            color: var(--muted);
+            flex-shrink: 0;
+            padding-top: 2px;
+        }
+
+        .ai-feat-body h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 3px;
+            letter-spacing: -0.2px;
+        }
+
+        .ai-feat-body p {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 300;
+            line-height: 1.65;
+            margin: 0;
+        }
+
+        /* AI Chat preview — clean wireframe style */
+        .ai-preview {
+            background: var(--white);
+            border: var(--rule);
+        }
+
+        .ai-prev-head {
+            padding: 16px 20px;
+            border-bottom: var(--rule);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ai-prev-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.2px;
+        }
+
+        .ai-prev-badge {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            border: var(--rule);
+            padding: 3px 8px;
+        }
+
+        .ai-prev-body {
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .ai-msg {
+            max-width: 82%;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 300;
+            line-height: 1.6;
+            color: var(--ink);
+        }
+
+        .ai-msg-in {
+            background: var(--surface);
+            border: var(--rule);
+            align-self: flex-start;
+        }
+
+        .ai-msg-out {
+            background: var(--ink);
+            color: var(--bg);
+            align-self: flex-end;
+        }
+
+        .ai-cursor {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 14px;
+            background: var(--surface);
+            border: var(--rule);
+            width: fit-content;
+        }
+
+        .ai-cursor span {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--muted);
+            animation: cursorBounce 1.2s infinite;
+        }
+
+        .ai-cursor span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .ai-cursor span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes cursorBounce {
+
+            0%,
+            100% {
                 transform: translateY(0);
+                opacity: 0.4;
+            }
+
+            50% {
+                transform: translateY(-4px);
                 opacity: 1;
             }
         }
 
-        @media (max-width: 768px) {
-            h1 { font-size: 3rem; }
-            .nav-links { display: none; }
+        /* ── DOWNLOAD ── */
+        .dl-section {
+            background: var(--ink);
+            color: var(--bg);
+            padding: 120px 0;
+        }
+
+        .dl-inner {
+            text-align: center;
+        }
+
+        .dl-inner .label-row {
+            justify-content: center;
+            color: rgba(247, 245, 240, 0.35);
+        }
+
+        .dl-inner .label-row::after {
+            display: none;
+        }
+
+        .dl-inner .label-row::before {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(247, 245, 240, 0.1);
+            max-width: 120px;
+        }
+
+        .dl-inner h2 {
+            font-family: var(--ff-serif);
+            font-size: clamp(44px, 6vw, 88px);
+            font-weight: 300;
+            line-height: 0.98;
+            letter-spacing: -3px;
+            color: var(--bg);
+            margin-bottom: 24px;
+        }
+
+        .dl-inner h2 em {
+            font-style: italic;
+            color: rgba(247, 245, 240, 0.45);
+        }
+
+        .dl-inner p {
+            font-size: 15px;
+            color: rgba(247, 245, 240, 0.45);
+            font-weight: 300;
+            margin-bottom: 56px;
+            line-height: 1.8;
+            max-width: 460px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .dl-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .store-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 28px;
+            text-decoration: none;
+            transition: background 0.2s;
+            border-radius: 2px;
+        }
+
+        .store-btn-light {
+            background: var(--bg);
+            color: var(--ink);
+        }
+
+        .store-btn-light:hover {
+            background: #ece9e3;
+        }
+
+        .store-btn-mid {
+            background: rgba(247, 245, 240, 0.08);
+            color: var(--bg);
+            border: 1px solid rgba(247, 245, 240, 0.12);
+        }
+
+        .store-btn-mid:hover {
+            background: rgba(247, 245, 240, 0.13);
+        }
+
+        .store-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .store-icon svg {
+            display: block;
+        }
+
+        .store-text p {
+            font-size: 10px;
+            font-weight: 400;
+            opacity: 0.55;
+            letter-spacing: 0.3px;
+            line-height: 1;
+            margin-bottom: 3px;
+        }
+
+        .store-text h5 {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            line-height: 1;
+        }
+
+        .dl-note {
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            color: rgba(247, 245, 240, 0.25);
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            border-top: var(--rule);
+            background: var(--bg);
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 60px;
+            padding: 60px 48px;
+            border-bottom: var(--rule);
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .footer-brand .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .footer-brand p {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 300;
+            line-height: 1.8;
+            max-width: 280px;
+            margin-bottom: 24px;
+        }
+
+        .footer-col h5 {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--ink);
+            margin-bottom: 20px;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+        }
+
+        .footer-col ul a {
+            font-size: 13px;
+            font-weight: 300;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul a:hover {
+            color: var(--ink);
+        }
+
+        .footer-bottom {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 20px 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 300;
+        }
+
+        /* ── SCROLL REVEALS ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.65s ease, transform 0.65s ease;
+        }
+
+        .reveal.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .d1 {
+            transition-delay: 0.08s;
+        }
+
+        .d2 {
+            transition-delay: 0.16s;
+        }
+
+        .d3 {
+            transition-delay: 0.24s;
+        }
+
+        .d4 {
+            transition-delay: 0.32s;
+        }
+
+        @media (max-width: 1024px) {
+            nav {
+                padding: 0 24px;
+            }
+
+            .hero {
+                padding: 120px 24px 60px;
+            }
+
+            .hero-tag {
+                display: none;
+            }
+
+            .hero-bottom {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+
+            .wrap {
+                padding: 0 24px;
+            }
+
+            .about-grid,
+            .features-head,
+            .badges-head,
+            .ai-inner,
+            .lb-layout {
+                grid-template-columns: 1fr;
+                gap: 48px;
+            }
+
+            .stats-strip {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stat-block:nth-child(2) {
+                border-right: none;
+            }
+
+            .stat-block:nth-child(3) {
+                border-right: var(--rule);
+            }
+
+            .stat-block:nth-child(3),
+            .stat-block:nth-child(4) {
+                border-top: var(--rule);
+            }
+
+            .how-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .how-step {
+                border-right: none;
+                border-bottom: var(--rule);
+            }
+
+            .how-step:last-child {
+                border-bottom: none;
+            }
+
+            .badges-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr 1fr;
+                gap: 40px;
+                padding: 40px 24px;
+            }
+
+            .footer-bottom {
+                padding: 16px 24px;
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+
+            .feature-row {
+                grid-template-columns: 40px 1fr;
+                gap: 20px;
+            }
+
+            .feat-desc,
+            .feat-tag {
+                grid-column: 2;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .nav-links {
+                display: none;
+            }
+
+            .stats-strip {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .badges-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .dl-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr;
+            }
+
+            .lb-table-head {
+                grid-template-columns: 30px 1fr 70px;
+            }
+
+            .lb-r {
+                grid-template-columns: 30px 1fr 70px;
+            }
+
+            .lb-pts {
+                display: none;
+            }
         }
     </style>
 </head>
+
 <body>
-    <nav class="navbar">
-        <div class="logo">Akura ED</div>
-        <div class="nav-links">
-            <a href="#features">Features</a>
-            <a href="/api/learning/">Learning</a>
-            <a href="/custom-admin/login/">Admin</a>
-        </div>
+
+    <!-- ── NAV ── -->
+    <nav>
+        <a href="#" class="nav-logo">
+            <div class="logo-mark">
+                <!-- Logo placeholder — swap the SVG below with: <img src="Logo.png" alt="Akura"> -->
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="18,4 32,28 4,28" fill="none" stroke="#0C0C0A" stroke-width="1.5"
+                        stroke-linejoin="round" />
+                    <polygon points="18,11 27,26 9,26" fill="#0C0C0A" opacity="0.08" />
+                    <line x1="18" y1="4" x2="18" y2="28" stroke="#0C0C0A" stroke-width="0.75" opacity="0.3" />
+                    <circle cx="18" cy="18" r="2.5" fill="#1A3D2B" />
+                </svg>
+            </div>
+            <div class="nav-wordmark">
+                Akura Educational Institute
+                <small>Exam Podda</small>
+            </div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#leaderboard">Leaderboard</a></li>
+            <li><a href="#badges">Badges</a></li>
+            <li><a href="#ai">AI Assistant</a></li>
+            <li><a href="#download" class="nav-btn">Download</a></li>
+        </ul>
     </nav>
 
+    <!-- ── HERO ── -->
     <section class="hero">
-        <h1>Transform Your <br><span class="highlight">Learning Journey</span></h1>
-        <p class="subtitle">Experience the next generation of digital education. Interactive, intuitive, and designed to unlock your full potential.</p>
-        <div class="cta-group">
-            <a href="/api/users/register/" class="btn btn-primary">Get Started</a>
-            <a href="#features" class="btn btn-outline">Explore More</a>
+        <div class="hero-tag">Akura Educational Institute &mdash; Est. 2024</div>
+
+        <div class="hero-label">Introducing Exam Podda</div>
+
+        <h1 class="hero-headline">
+            The exam<br>
+            preparation<br>
+            app that <em>works.</em>
+        </h1>
+
+        <div class="hero-bottom">
+            <p class="hero-desc">
+                Akura Educational Institute built Exam Podda for students who want more than passive reading. Practice
+                MCQs, master concepts with flashcards, compete on the leaderboard, and earn your way to the top.
+            </p>
+            <div class="hero-actions">
+                <a href="#download" class="btn-dark">Download Free</a>
+                <a href="#features" class="btn-outline">Explore Features</a>
+            </div>
         </div>
     </section>
 
-    <section id="features" class="features">
-        <div class="feature-card">
-            <div class="feature-icon">🚀</div>
-            <h3>Accelerated Growth</h3>
-            <p>Our intelligent algorithms adapt to your learning pace, ensuring you master concepts faster than ever before.</p>
+    <!-- ── STATS STRIP ── -->
+    <div class="stats-strip">
+        <div class="stat-block reveal">
+            <div class="stat-n">10K<span>+</span></div>
+            <div class="stat-l">Active students<br>across all subjects</div>
         </div>
-        <div class="feature-card">
-            <div class="feature-icon">🧠</div>
-            <h3>Deep Insights</h3>
-            <p>Track your progress with advanced analytics that highlight your strengths and areas for improvement.</p>
+        <div class="stat-block reveal d1">
+            <div class="stat-n">50<em>K</em></div>
+            <div class="stat-l">Practice questions<br>built by educators</div>
         </div>
-        <div class="feature-card">
-            <div class="feature-icon">🌐</div>
-            <h3>Access Anywhere</h3>
-            <p>Seamlessly switch between devices. Your progress is always synced securely in the cloud.</p>
+        <div class="stat-block reveal d2">
+            <div class="stat-n">98<em>%</em></div>
+            <div class="stat-l">Student satisfaction<br>score to date</div>
+        </div>
+        <div class="stat-block reveal d3">
+            <div class="stat-n">4<em>.9</em></div>
+            <div class="stat-l">App store rating<br>iOS & Android</div>
+        </div>
+    </div>
+
+    <!-- ── MARQUEE ── -->
+    <div class="marquee-wrap">
+        <div class="marquee-track">
+            <span class="accent">Mathematics</span><span class="marquee-sep"></span>
+            <span>Science</span><span class="marquee-sep"></span>
+            <span class="accent">Information Technology</span><span class="marquee-sep"></span>
+            <span>English Literature</span><span class="marquee-sep"></span>
+            <span class="accent">Physics</span><span class="marquee-sep"></span>
+            <span>Chemistry</span><span class="marquee-sep"></span>
+            <span class="accent">AL Subjects</span><span class="marquee-sep"></span>
+            <span>OL Subjects</span><span class="marquee-sep"></span>
+            <span class="accent">LLB Open University</span><span class="marquee-sep"></span>
+            <span>Korean TOPIK</span><span class="marquee-sep"></span>
+            <span class="accent">Law College Exam</span><span class="marquee-sep"></span>
+            <!-- duplicate for seamless loop -->
+            <span class="accent">Mathematics</span><span class="marquee-sep"></span>
+            <span>Science</span><span class="marquee-sep"></span>
+            <span class="accent">Information Technology</span><span class="marquee-sep"></span>
+            <span>English Literature</span><span class="marquee-sep"></span>
+            <span class="accent">Physics</span><span class="marquee-sep"></span>
+            <span>Chemistry</span><span class="marquee-sep"></span>
+            <span class="accent">AL Subjects</span><span class="marquee-sep"></span>
+            <span>OL Subjects</span><span class="marquee-sep"></span>
+            <span class="accent">LLB Open University</span><span class="marquee-sep"></span>
+            <span>Korean TOPIK</span><span class="marquee-sep"></span>
+            <span class="accent">Law College Exam</span><span class="marquee-sep"></span>
+        </div>
+    </div>
+
+    <!-- ── ABOUT ── -->
+    <section class="about-section">
+        <div class="wrap">
+            <div class="label-row">About the Institute</div>
+            <div class="about-grid">
+                <div class="about-left reveal">
+                    <h2>Education built on<br><em>depth,</em> not distraction.</h2>
+                    <p>Akura Educational Institute was founded with a single conviction: that every student deserves a
+                        rigorous, engaging path to exam success. Exam Podda is how we deliver on that promise.</p>
+                    <p>We combine carefully curated question banks, proven active-recall techniques, and healthy
+                        competitive elements to build real, lasting knowledge — not just exam-day confidence.</p>
+                    <a href="#features" class="btn-outline" style="margin-top:8px;display:inline-block;">See How It
+                        Works</a>
+                </div>
+                <div class="about-right reveal d1">
+                    <div class="about-num-list">
+                        <div class="about-num-item">
+                            <div class="num-big">12<em>+</em></div>
+                            <div class="num-text">
+                                <h4>Subject Categories</h4>
+                                <p>From advanced-level sciences to open university law programmes and international
+                                    language exams.</p>
+                            </div>
+                        </div>
+                        <div class="about-num-item">
+                            <div class="num-big">30<em>+</em></div>
+                            <div class="num-text">
+                                <h4>Achievement Badges</h4>
+                                <p>A progression system that rewards consistency, accuracy and mastery at every stage of
+                                    study.</p>
+                            </div>
+                        </div>
+                        <div class="about-num-item">
+                            <div class="num-big">2</div>
+                            <div class="num-text">
+                                <h4>Platforms Supported</h4>
+                                <p>Native applications on both iOS and Android, with a consistent experience across all
+                                    devices.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
+
+    <!-- ── FEATURES ── -->
+    <section class="features-section" id="features">
+        <div class="wrap">
+            <div class="label-row">Product Features</div>
+            <div class="features-head">
+                <h2 reveal>Everything a<br>serious student<br><em>needs.</em></h2>
+                <p class="reveal d1">Exam Podda is not a passive reading app. Every feature is engineered to make your
+                    study time count — building the retrieval practice, pattern recognition, and motivation that lead to
+                    results.</p>
+            </div>
+            <div class="features-list">
+                <div class="feature-row reveal">
+                    <div class="feat-num">01</div>
+                    <div class="feat-name">MCQ Practice</div>
+                    <div class="feat-desc">Thousands of multiple-choice questions built and verified by subject
+                        educators. Each answer comes with an instant explanation so you understand why, not just what.
+                    </div>
+                    <div><span class="feat-tag tag-green">Core Feature</span></div>
+                </div>
+                <div class="feature-row reveal d1">
+                    <div class="feat-num">02</div>
+                    <div class="feat-name">Flashcard System</div>
+                    <div class="feat-desc">Swipe-based active recall cards that adapt to your confidence rating. The
+                        system surfaces weaker areas more often — the way spaced repetition is supposed to work.</div>
+                    <div><span class="feat-tag tag-green">Core Feature</span></div>
+                </div>
+                <div class="feature-row reveal d2">
+                    <div class="feat-num">03</div>
+                    <div class="feat-name">Live Leaderboard</div>
+                    <div class="feat-desc">Real-time global rankings updated after every quiz. Your position is
+                        determined by correct answers, accuracy percentage, and study consistency — not raw time spent.
+                    </div>
+                    <div><span class="feat-tag tag-ink">Competitive</span></div>
+                </div>
+                <div class="feature-row reveal d3">
+                    <div class="feat-num">04</div>
+                    <div class="feat-name">Achievement Badges</div>
+                    <div class="feat-desc">A structured reward system with over 30 unique badges. Earn them for accuracy
+                        milestones, daily streaks, subject completion, and ranking achievements.</div>
+                    <div><span class="feat-tag tag-dark">Progression</span></div>
+                </div>
+                <div class="feature-row reveal" style="opacity:0.7;">
+                    <div class="feat-num">05</div>
+                    <div class="feat-name">AI Learning Assistant</div>
+                    <div class="feat-desc">A personal AI tutor that explains concepts on demand, generates revision
+                        plans based on your weak spots, and walks you through questions step by step.</div>
+                    <div><span class="feat-tag tag-dark">Coming Soon</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── LEADERBOARD ── -->
+    <section class="lb-section" id="leaderboard">
+        <div class="wrap">
+            <div class="label-row">Global Leaderboard</div>
+            <div class="lb-layout">
+                <div class="lb-left reveal">
+                    <h2>Compete with<br>the <em>best.</em></h2>
+                    <p>The leaderboard updates in real time. Every correct MCQ answer, every flashcard session, every
+                        daily streak — it all counts. Students from every subject compete in one unified ranking.</p>
+                    <a href="#download" class="btn-dark">Join the Competition</a>
+                </div>
+                <div class="lb-right reveal d1">
+                    <div class="lb-table">
+                        <div class="lb-table-head">
+                            <div class="lb-th">#</div>
+                            <div class="lb-th">Student</div>
+                            <div class="lb-th">Accuracy</div>
+                            <div class="lb-th" style="text-align:right;">Score</div>
+                        </div>
+                        <div class="lb-rows">
+                            <div class="lb-r">
+                                <div class="lb-pos top">01</div>
+                                <div class="lb-ident">
+                                    <div class="lb-ident-name">Ahmed Farhan</div>
+                                    <div class="lb-ident-sub">Mathematics &mdash; 12-day streak</div>
+                                </div>
+                                <div class="lb-acc">98%</div>
+                                <div class="lb-pts">3,840</div>
+                            </div>
+                            <div class="lb-r">
+                                <div class="lb-pos top">02</div>
+                                <div class="lb-ident">
+                                    <div class="lb-ident-name">Nadia Rahman</div>
+                                    <div class="lb-ident-sub">Science &mdash; 9-day streak</div>
+                                </div>
+                                <div class="lb-acc">95%</div>
+                                <div class="lb-pts">3,612</div>
+                            </div>
+                            <div class="lb-r">
+                                <div class="lb-pos top">03</div>
+                                <div class="lb-ident">
+                                    <div class="lb-ident-name">Karim Islam</div>
+                                    <div class="lb-ident-sub">English &mdash; 7-day streak</div>
+                                </div>
+                                <div class="lb-acc">91%</div>
+                                <div class="lb-pts">3,410</div>
+                            </div>
+                            <div class="lb-r">
+                                <div class="lb-pos">04</div>
+                                <div class="lb-ident">
+                                    <div class="lb-ident-name">Sadia Parveen</div>
+                                    <div class="lb-ident-sub">IT &mdash; 5-day streak</div>
+                                </div>
+                                <div class="lb-acc">88%</div>
+                                <div class="lb-pts">3,205</div>
+                            </div>
+                            <div class="lb-r">
+                                <div class="lb-pos">05</div>
+                                <div class="lb-ident">
+                                    <div class="lb-ident-name">Mohammed Haque</div>
+                                    <div class="lb-ident-sub">Physics &mdash; 4-day streak</div>
+                                </div>
+                                <div class="lb-acc">86%</div>
+                                <div class="lb-pts">3,098</div>
+                            </div>
+                            <div class="lb-r" style="opacity:0.45;">
+                                <div class="lb-pos">—</div>
+                                <div class="lb-ident">
+                                    <div class="lb-ident-name">You</div>
+                                    <div class="lb-ident-sub">Start practising to rank</div>
+                                </div>
+                                <div class="lb-acc">—</div>
+                                <div class="lb-pts">—</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── HOW IT WORKS ── -->
+    <section class="how-section">
+        <div class="wrap">
+            <div class="label-row">How It Works</div>
+            <div class="how-grid">
+                <div class="how-step reveal">
+                    <span class="step-index">Step 01</span>
+                    <div class="step-icon-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="5" y="2" width="14" height="20" rx="2" />
+                            <line x1="9" y1="7" x2="15" y2="7" />
+                            <line x1="9" y1="11" x2="15" y2="11" />
+                            <line x1="9" y1="15" x2="12" y2="15" />
+                        </svg>
+                    </div>
+                    <h3>Download &amp; Create Your Account</h3>
+                    <p>Get Exam Podda free on the App Store or Google Play. Registration takes under a minute — name,
+                        email, done. No subscription or payment required to start.</p>
+                </div>
+                <div class="how-step reveal d1">
+                    <span class="step-index">Step 02</span>
+                    <div class="step-icon-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                            <polyline points="2,17 12,22 22,17" />
+                            <polyline points="2,12 12,17 22,12" />
+                        </svg>
+                    </div>
+                    <h3>Select Your Subject &amp; Category</h3>
+                    <p>Choose from AL, OL, university, and speciality exam tracks. The app loads a tailored question
+                        bank and flashcard set matched to your chosen curriculum.</p>
+                </div>
+                <div class="how-step reveal d2">
+                    <span class="step-index">Step 03</span>
+                    <div class="step-icon-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" />
+                        </svg>
+                    </div>
+                    <h3>Practice, Track Progress &amp; Climb</h3>
+                    <p>Answer MCQs, flip flashcards, check your accuracy, and watch your leaderboard position rise. Earn
+                        badges as you hit milestones and keep your streak alive.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── BADGES ── -->
+    <section class="badges-section" id="badges">
+        <div class="wrap">
+            <div class="label-row">Achievement System</div>
+            <div class="badges-head">
+                <h2 class="reveal">Progress that<br>you can <em>show.</em></h2>
+                <p class="reveal d1">Thirty-plus unique badges are awarded for consistency, accuracy, and mastery. They
+                    display on your public profile — a record of what you have actually earned.</p>
+            </div>
+            <div class="badges-grid reveal">
+                <div class="badge-item">
+                    <div class="badge-sym">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                    </div>
+                    <h4>Perfect Score</h4>
+                    <p>100% on any complete quiz round</p>
+                </div>
+                <div class="badge-item">
+                    <div class="badge-sym">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12,6 12,12 16,14" />
+                        </svg>
+                    </div>
+                    <h4>7-Day Streak</h4>
+                    <p>Seven consecutive days of practice</p>
+                </div>
+                <div class="badge-item">
+                    <div class="badge-sym">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                    </div>
+                    <h4>Speed Demon</h4>
+                    <p>Complete a quiz in under 60 seconds</p>
+                </div>
+                <div class="badge-item">
+                    <div class="badge-sym">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 20h20M4 20V10l8-7 8 7v10" />
+                            <rect x="9" y="14" width="6" height="6" />
+                        </svg>
+                    </div>
+                    <h4>Subject Master</h4>
+                    <p>Complete all topics in one subject</p>
+                </div>
+                <div class="badge-item">
+                    <div class="badge-sym">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="8" r="6" />
+                            <path d="M8 14l-4 7h16l-4-7" />
+                        </svg>
+                    </div>
+                    <h4>Top 10</h4>
+                    <p>Reach the top ten on the global board</p>
+                </div>
+                <div class="badge-item" style="background:var(--surface);">
+                    <div class="badge-sym" style="border-color:var(--ink);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polygon
+                                points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2" />
+                        </svg>
+                    </div>
+                    <h4>Champion</h4>
+                    <p>Hold the number one rank for a full week</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── AI ASSISTANT ── -->
+    <section class="ai-section" id="ai">
+        <div class="wrap">
+            <div class="label-row">Coming Soon</div>
+            <div class="ai-inner">
+                <div class="ai-text reveal">
+                    <h2>Your personal<br><em>AI tutor</em><br>is almost here.</h2>
+                    <p>We are building an AI assistant that lives inside Exam Podda. Ask it anything — from breaking
+                        down a difficult concept to generating a revision plan tailored to your weakest areas.</p>
+                    <div class="ai-feature-list">
+                        <div class="ai-feat">
+                            <span class="ai-feat-num">i.</span>
+                            <div class="ai-feat-body">
+                                <h4>On-demand explanations</h4>
+                                <p>Ask about any topic in plain language and receive a clear, structured answer
+                                    immediately.</p>
+                            </div>
+                        </div>
+                        <div class="ai-feat">
+                            <span class="ai-feat-num">ii.</span>
+                            <div class="ai-feat-body">
+                                <h4>Personalised revision plans</h4>
+                                <p>Based on your quiz history, the AI identifies gaps and builds a targeted study
+                                    schedule.</p>
+                            </div>
+                        </div>
+                        <div class="ai-feat">
+                            <span class="ai-feat-num">iii.</span>
+                            <div class="ai-feat-body">
+                                <h4>Step-by-step walkthroughs</h4>
+                                <p>For any question you got wrong, the assistant breaks down the answer from first
+                                    principles.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ai-preview reveal d1">
+                    <div class="ai-prev-head">
+                        <span class="ai-prev-title">Akura AI Assistant</span>
+                        <span class="ai-prev-badge">Coming Soon</span>
+                    </div>
+                    <div class="ai-prev-body">
+                        <div class="ai-msg ai-msg-in">Hello. I'm your Akura AI tutor. What would you like to work on
+                            today?</div>
+                        <div class="ai-msg ai-msg-out">Can you explain Newton's First Law simply?</div>
+                        <div class="ai-msg ai-msg-in">Newton's First Law — the Law of Inertia — states that an object at
+                            rest stays at rest, and one in motion stays in motion at constant velocity, unless acted on
+                            by an external force. In short: things do not change what they are doing unless something
+                            makes them.</div>
+                        <div class="ai-msg ai-msg-out">Give me a practice question on it.</div>
+                        <div class="ai-cursor"><span></span><span></span><span></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── DOWNLOAD ── -->
+    <section class="dl-section" id="download">
+        <div class="wrap">
+            <div class="dl-inner">
+                <div class="label-row">Download Free</div>
+                <h2>Start learning<br><em>properly.</em></h2>
+                <p>Free on iOS and Android. No subscription, no paywalls on the core experience. Just open the app and
+                    start practising.</p>
+                <div class="dl-buttons">
+                    <a href="#" class="store-btn store-btn-light">
+                        <div class="store-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.42c1.3.07 2.2.73 3.02.78.93-.15 1.87-.88 3.15-.94 1.53-.06 2.96.65 3.83 1.87-3.28 1.97-2.68 6.09.47 7.61-.64 1.61-1.44 3.19-2.47 3.54zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"
+                                    fill="#0C0C0A" />
+                            </svg>
+                        </div>
+                        <div class="store-text" style="color:var(--ink);">
+                            <p>Download on the</p>
+                            <h5>App Store</h5>
+                        </div>
+                    </a>
+                    <a href="#" class="store-btn store-btn-mid">
+                        <div class="store-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3.61 2.2A1 1 0 002 3v18a1 1 0 001.61.79L20 12 3.61 2.2z"
+                                    fill="rgba(247,245,240,0.85)" />
+                            </svg>
+                        </div>
+                        <div class="store-text">
+                            <p>Get it on</p>
+                            <h5>Google Play</h5>
+                        </div>
+                    </a>
+                </div>
+                <p class="dl-note">Free to download &nbsp;&middot;&nbsp; iOS &amp; Android &nbsp;&middot;&nbsp;
+                    Available worldwide</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── FOOTER ── -->
+    <footer>
+        <div class="footer-top">
+            <div class="footer-brand">
+                <div class="logo-area">
+                    <div class="logo-mark">
+                        <svg width="32" height="32" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="18,4 32,28 4,28" fill="none" stroke="#0C0C0A" stroke-width="1.5"
+                                stroke-linejoin="round" />
+                            <polygon points="18,11 27,26 9,26" fill="#0C0C0A" opacity="0.08" />
+                            <line x1="18" y1="4" x2="18" y2="28" stroke="#0C0C0A" stroke-width="0.75" opacity="0.3" />
+                            <circle cx="18" cy="18" r="2.5" fill="#1A3D2B" />
+                        </svg>
+                    </div>
+                    <div class="nav-wordmark">Akura Educational Institute<small>Exam Podda</small></div>
+                </div>
+                <p>Building rigorous, engaging exam preparation for every student. Practice MCQs, master flashcards,
+                    compete on the leaderboard — and learn the right way.</p>
+                <a href="#download" class="btn-dark" style="font-size:11px;padding:10px 20px;">Download Exam Podda</a>
+            </div>
+            <div class="footer-col">
+                <h5>Product</h5>
+                <ul>
+                    <li><a href="#">MCQ Practice</a></li>
+                    <li><a href="#">Flashcards</a></li>
+                    <li><a href="#">Leaderboard</a></li>
+                    <li><a href="#">Badges</a></li>
+                    <li><a href="#">AI Assistant</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h5>Institute</h5>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Our Mission</a></li>
+                    <li><a href="#">Educators</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Careers</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h5>Support</h5>
+                <ul>
+                    <li><a href="#">Help Centre</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Use</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2025 Akura Educational Institute. All rights reserved.</span>
+            <span>Learn. Practice. Achieve.</span>
+        </div>
+    </footer>
+
+    <script>
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('in');
+                    io.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal, .stat-block').forEach(el => io.observe(el));
+
+        // stagger feature-row reveals
+        document.querySelectorAll('.feature-row').forEach((el, i) => {
+            el.classList.add('reveal');
+            el.style.transitionDelay = (i * 0.08) + 's';
+        });
+
+        // nav scroll
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            nav.style.borderBottomColor = window.scrollY > 40 ? 'var(--border)' : 'var(--border)';
+        }, { passive: true });
+
+        // smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                const t = document.querySelector(a.getAttribute('href'));
+                if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+            });
+        });
+    </script>
 </body>
+
 </html>
