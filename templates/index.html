@@ -1396,9 +1396,431 @@
             }
         }
 
+        /* ── DARK MODE VARIABLES ── */
+        [data-theme="dark"] {
+            --bg: #0E0E0C;
+            --white: #161614;
+            --ink: #F0EDE6;
+            --ink2: #D8D5CD;
+            --forest: #6DB88A;
+            --forest2: #4E9A6A;
+            --muted: #8A8780;
+            --border: #2C2C2A;
+            --surface: #1A1A18;
+        }
+
+        /* smooth theme transitions */
+        body,
+        nav,
+        footer,
+        .how-section,
+        .stat-block,
+        .feature-row,
+        .badge-item,
+        .lb-r,
+        .how-step,
+        .ai-preview,
+        .ai-prev-head,
+        .ai-prev-body,
+        .ai-msg-in,
+        .ai-cursor {
+            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        [data-theme="dark"] nav {
+            background: rgba(14, 14, 12, 0.93);
+        }
+
+        [data-theme="dark"] .logo-mark img {
+            filter: brightness(0) invert(1);
+        }
+
+        /* marquee strip in dark mode */
+        [data-theme="dark"] .marquee-track span {
+            color: rgba(12, 12, 10, 0.5);
+        }
+
+        [data-theme="dark"] .marquee-track span.accent {
+            color: var(--bg);
+        }
+
+        [data-theme="dark"] .marquee-sep {
+            background: rgba(12, 12, 10, 0.2);
+        }
+
+        /* download section — naturally inverts; fix hardcoded colours */
+        [data-theme="dark"] .dl-inner .label-row {
+            color: rgba(12, 12, 10, 0.38);
+        }
+
+        [data-theme="dark"] .dl-inner .label-row::before {
+            background: rgba(12, 12, 10, 0.12);
+        }
+
+        [data-theme="dark"] .dl-inner h2 {
+            color: var(--bg);
+        }
+
+        [data-theme="dark"] .dl-inner>p {
+            color: rgba(12, 12, 10, 0.5);
+        }
+
+        [data-theme="dark"] .store-btn-light {
+            background: var(--surface);
+            color: var(--bg);
+        }
+
+        [data-theme="dark"] .store-btn-light:hover {
+            background: var(--border);
+        }
+
+        [data-theme="dark"] .store-btn-light .store-icon path {
+            fill: var(--bg);
+        }
+
+        [data-theme="dark"] .store-btn-mid {
+            background: rgba(12, 12, 10, 0.08);
+            color: var(--bg);
+            border-color: rgba(12, 12, 10, 0.14);
+        }
+
+        [data-theme="dark"] .store-btn-mid:hover {
+            background: rgba(12, 12, 10, 0.14);
+        }
+
+        [data-theme="dark"] .store-btn-mid .store-icon path {
+            fill: rgba(12, 12, 10, 0.82);
+        }
+
+        [data-theme="dark"] .dl-note {
+            color: rgba(12, 12, 10, 0.28);
+        }
+
+        /* ── THEME TOGGLE BUTTON ── */
+        .theme-toggle {
+            background: none;
+            border: var(--rule);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--muted);
+            border-radius: 0;
+            flex-shrink: 0;
+            padding: 0;
+            transition: color 0.2s, border-color 0.2s;
+            margin-left: 8px;
+        }
+
+        .theme-toggle:hover {
+            color: var(--ink);
+            border-color: var(--ink);
+        }
+
+        .theme-toggle svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Use component-scoped selectors so specificity beats the svg rule above */
+        .theme-toggle .icon-sun {
+            display: block;
+        }
+
+        .theme-toggle .icon-moon {
+            display: none;
+        }
+
+        [data-theme="dark"] .theme-toggle .icon-sun {
+            display: none;
+        }
+
+        [data-theme="dark"] .theme-toggle .icon-moon {
+            display: block;
+        }
+
+        /* ── HAMBURGER BUTTON ── */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--muted);
+            border-radius: 0;
+            padding: 0;
+            flex-shrink: 0;
+            transition: color 0.2s;
+            margin-left: 4px;
+            position: relative;
+            z-index: 210;
+        }
+
+        .hamburger-btn:hover {
+            color: var(--ink);
+        }
+
+        .hamburger-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            position: absolute;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .hamburger-btn .hb-open {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+
+        .hamburger-btn .hb-close {
+            opacity: 0;
+            transform: rotate(-45deg);
+        }
+
+        .hamburger-btn.open .hb-open {
+            opacity: 0;
+            transform: rotate(45deg);
+        }
+
+        .hamburger-btn.open .hb-close {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+
+        /* ── FULL-SCREEN GLASS OVERLAY ── */
+        .mobile-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 195;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 40px 60px;
+            background: rgba(247, 245, 240, 0.80);
+            backdrop-filter: blur(32px) saturate(200%);
+            -webkit-backdrop-filter: blur(32px) saturate(200%);
+            /* start hidden */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .mobile-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        [data-theme="dark"] .mobile-overlay {
+            background: rgba(10, 10, 8, 0.84);
+        }
+
+        /* overlay nav links — editorial, large serif */
+        .overlay-nav-links {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 340px;
+            margin-bottom: 48px;
+        }
+
+        .overlay-nav-links a {
+            font-family: var(--ff-serif);
+            font-size: clamp(32px, 9vw, 52px);
+            font-weight: 300;
+            letter-spacing: -1.5px;
+            line-height: 1;
+            color: var(--ink);
+            text-decoration: none;
+            padding: 20px 0;
+            border-top: var(--rule);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: color 0.2s, padding-left 0.2s;
+            opacity: 0;
+            transform: translateY(18px);
+            transition: opacity 0.4s ease, transform 0.4s ease, color 0.2s, padding-left 0.2s;
+        }
+
+        .overlay-nav-links a:last-child {
+            border-bottom: var(--rule);
+        }
+
+        .overlay-nav-links a:hover {
+            color: var(--forest);
+            padding-left: 6px;
+        }
+
+        .overlay-nav-links a .ol-arrow {
+            font-style: italic;
+            font-size: 0.5em;
+            color: var(--muted);
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+
+        .overlay-nav-links a:hover .ol-arrow {
+            transform: translate(4px, -2px);
+        }
+
+        /* staggered entrance */
+        .mobile-overlay.open .overlay-nav-links a:nth-child(1) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.05s;
+        }
+
+        .mobile-overlay.open .overlay-nav-links a:nth-child(2) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.10s;
+        }
+
+        .mobile-overlay.open .overlay-nav-links a:nth-child(3) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.15s;
+        }
+
+        .mobile-overlay.open .overlay-nav-links a:nth-child(4) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.20s;
+        }
+
+        /* overlay download section */
+        .overlay-dl {
+            width: 100%;
+            max-width: 340px;
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity 0.4s ease 0.28s, transform 0.4s ease 0.28s;
+        }
+
+        .mobile-overlay.open .overlay-dl {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .overlay-dl-label {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 14px;
+        }
+
+        .overlay-dl-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .overlay-store-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 15px 20px;
+            text-decoration: none;
+            border-radius: 2px;
+            border: var(--rule);
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .overlay-store-btn.apple {
+            background: var(--ink);
+            border-color: var(--ink);
+        }
+
+        .overlay-store-btn.apple:hover {
+            background: var(--forest);
+            border-color: var(--forest);
+        }
+
+        .overlay-store-btn.android {
+            background: transparent;
+        }
+
+        .overlay-store-btn.android:hover {
+            background: var(--surface);
+        }
+
+        .overlay-store-btn svg {
+            flex-shrink: 0;
+        }
+
+        .overlay-store-text p {
+            font-size: 9px;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            line-height: 1;
+            margin-bottom: 3px;
+            opacity: 0.55;
+        }
+
+        .overlay-store-text h5 {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            line-height: 1;
+        }
+
+        .overlay-store-btn.apple .overlay-store-text p,
+        .overlay-store-btn.apple .overlay-store-text h5 {
+            color: var(--bg);
+        }
+
+        .overlay-store-btn.android .overlay-store-text p,
+        .overlay-store-btn.android .overlay-store-text h5 {
+            color: var(--ink);
+        }
+
+        /* overlay brand footer */
+        .overlay-brand {
+            position: absolute;
+            bottom: 32px;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            opacity: 0;
+            transition: opacity 0.4s ease 0.35s;
+            font-family: var(--ff-sans);
+        }
+
+        .mobile-overlay.open .overlay-brand {
+            opacity: 0.5;
+        }
+
+        /* nav right cluster */
+        .nav-right {
+            display: flex;
+            align-items: center;
+        }
+
         @media (max-width: 640px) {
             .nav-links {
                 display: none;
+            }
+
+            .hamburger-btn {
+                display: flex;
             }
 
             .stats-strip {
@@ -1436,23 +1858,95 @@
 <body>
 
     <nav>
-        <a href="#" class="nav-logo">
+        <a href="https://www.akuraedu.com/#" class="nav-logo">
             <div class="logo-mark">
                 <img src="{% static 'Logo.png' %}" alt="Akura">
             </div>
             <div class="nav-wordmark sinhala-text">
                 අකුර අධ්‍යාපන ආයතනය
-                <small style="font-family: var(--ff-sans);">Exam පොඩ්ඩා</small>
+                <small style="font-family: var(--ff-sans);">Exam Podda</small>
             </div>
         </a>
-        <ul class="nav-links sinhala-text">
-            <li><a href="#features">විශේෂාංග</a></li>
-            <li><a href="#leaderboard">ප්‍රමුඛ පුවරුව</a></li>
-            <li><a href="#badges">ලාංඡන</a></li>
-            <li><a href="#ai">AI සහායක</a></li>
-            <li><a href="#download" class="nav-btn">බාගත කරන්න</a></li>
-        </ul>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#leaderboard">Leaderboard</a></li>
+                <li><a href="#badges">Badges</a></li>
+                <li><a href="#ai">AI Assistant</a></li>
+                <li><a href="#download" class="nav-btn">Download</a></li>
+            </ul>
+            <!-- Dark / Light toggle -->
+            <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle dark mode">
+                <svg class="icon-sun" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="4" />
+                    <line x1="12" y1="2" x2="12" y2="5" />
+                    <line x1="12" y1="19" x2="12" y2="22" />
+                    <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" />
+                    <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
+                    <line x1="2" y1="12" x2="5" y2="12" />
+                    <line x1="19" y1="12" x2="22" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" />
+                    <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
+                </svg>
+                <svg class="icon-moon" viewBox="0 0 24 24">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                </svg>
+            </button>
+            <!-- Hamburger — mobile only -->
+            <button class="hamburger-btn" id="hamburgerBtn" title="Download the app" aria-label="Download menu">
+                <svg class="hb-open" viewBox="0 0 24 24">
+                    <line x1="3" y1="7" x2="21" y2="7" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="17" x2="21" y2="17" />
+                </svg>
+                <svg class="hb-close" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
     </nav>
+
+    <!-- ── FULL-SCREEN GLASS OVERLAY (mobile) ── -->
+    <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true">
+
+        <!-- Nav links -->
+        <nav class="overlay-nav-links" aria-label="Mobile navigation">
+            <a href="#features" class="overlay-link">Features <span class="ol-arrow">↗</span></a>
+            <a href="#leaderboard" class="overlay-link">Leaderboard <span class="ol-arrow">↗</span></a>
+            <a href="#badges" class="overlay-link">Badges <span class="ol-arrow">↗</span></a>
+            <a href="#ai" class="overlay-link">AI Assistant <span class="ol-arrow">↗</span></a>
+        </nav>
+
+        <!-- Download buttons -->
+        <div class="overlay-dl">
+            <p class="overlay-dl-label">Download Free</p>
+            <div class="overlay-dl-btns">
+                <a href="#" class="overlay-store-btn apple">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.42c1.3.07 2.2.73 3.02.78.93-.15 1.87-.88 3.15-.94 1.53-.06 2.96.65 3.83 1.87-3.28 1.97-2.68 6.09.47 7.61-.64 1.61-1.44 3.19-2.47 3.54zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"
+                            fill="var(--bg)" />
+                    </svg>
+                    <div class="overlay-store-text">
+                        <p>Download on the</p>
+                        <h5>App Store</h5>
+                    </div>
+                </a>
+                <a href="#" class="overlay-store-btn android">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <path d="M3.61 2.2A1 1 0 002 3v18a1 1 0 001.61.79L20 12 3.61 2.2z" fill="var(--ink)" />
+                    </svg>
+                    <div class="overlay-store-text">
+                        <p>Get it on</p>
+                        <h5>Google Play</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <span class="overlay-brand">Akura Educational Institute</span>
+    </div>
 
     <!-- ── HERO ── -->
     <section class="hero">
@@ -1519,9 +2013,7 @@
             <span>English</span><span class="marquee-sep"></span>
             <span class="accent">Mathematics</span><span class="marquee-sep"></span>
             <span>History</span><span class="marquee-sep"></span>
-            <span class="accent sinhala-text">LLB විභාගය (විවෘත විශ්වවිද්යාලය)</span><span class="marquee-sep"></span>
-            <span class="sinhala-text">සාමාන්ය බුද්ධිය (GI)</span><span class="marquee-sep"></span>
-            <span class="accent sinhala-text">සමාන්ය දැනීම (GK)</span><span class="marquee-sep"></span>
+            <span class="accent">LLB Exam (Open University)</span><span class="marquee-sep"></span>
             <span>General Intelligence (GI)</span><span class="marquee-sep"></span>
             <span class="accent">General Knowledge (GK)</span><span class="marquee-sep"></span>
             <!-- duplicate for seamless loop -->
@@ -1543,9 +2035,7 @@
             <span>English</span><span class="marquee-sep"></span>
             <span class="accent">Mathematics</span><span class="marquee-sep"></span>
             <span>History</span><span class="marquee-sep"></span>
-            <span class="accent sinhala-text">LLB විභාගය (විවෘත විශ්වවිද්යාලය)</span><span class="marquee-sep"></span>
-            <span class="sinhala-text">සාමාන්ය බුද්ධිය (GI)</span><span class="marquee-sep"></span>
-            <span class="accent sinhala-text">සමාන්ය දැනීම (GK)</span><span class="marquee-sep"></span>
+            <span class="accent">LLB Exam (Open University)</span><span class="marquee-sep"></span>
             <span>General Intelligence (GI)</span><span class="marquee-sep"></span>
             <span class="accent">General Knowledge (GK)</span><span class="marquee-sep"></span>
         </div>
@@ -1652,7 +2142,7 @@
     <!-- ── LEADERBOARD ── -->
     <section class="lb-section" id="leaderboard">
         <div class="wrap">
-            <div class="label-row sinhala-text">ගෝලීය ප්‍රමුඛ පුවරුව (Global Leaderboard)</div>
+            <div class="label-row">Global Leaderboard</div>
             <div class="lb-layout">
                 <div class="lb-left reveal">
                     <h2>Compete with<br>the <em>best.</em></h2>
@@ -1672,8 +2162,8 @@
                             <div class="lb-r">
                                 <div class="lb-pos top">01</div>
                                 <div class="lb-ident">
-                                    <div class="lb-ident-name sinhala-text">කමල් පෙරේරා</div>
-                                    <div class="lb-ident-sub"><span class="sinhala-text">ගණිතය</span> &mdash; 12-day streak</div>
+                                    <div class="lb-ident-name">Kamal Perera</div>
+                                    <div class="lb-ident-sub">Mathematics &mdash; 12-day streak</div>
                                 </div>
                                 <div class="lb-acc">98%</div>
                                 <div class="lb-pts">3,840</div>
@@ -1681,8 +2171,8 @@
                             <div class="lb-r">
                                 <div class="lb-pos top">02</div>
                                 <div class="lb-ident">
-                                    <div class="lb-ident-name sinhala-text">නිමල් රත්නායක</div>
-                                    <div class="lb-ident-sub"><span class="sinhala-text">විද්‍යාව</span> &mdash; 9-day streak</div>
+                                    <div class="lb-ident-name">Nimal Ratnayake</div>
+                                    <div class="lb-ident-sub">Science &mdash; 9-day streak</div>
                                 </div>
                                 <div class="lb-acc">95%</div>
                                 <div class="lb-pts">3,612</div>
@@ -1690,8 +2180,8 @@
                             <div class="lb-r">
                                 <div class="lb-pos top">03</div>
                                 <div class="lb-ident">
-                                    <div class="lb-ident-name sinhala-text">සමන් කුමාර</div>
-                                    <div class="lb-ident-sub"><span class="sinhala-text">ඉංග්‍රීසි</span> &mdash; 7-day streak</div>
+                                    <div class="lb-ident-name">Saman Kumara</div>
+                                    <div class="lb-ident-sub">English &mdash; 7-day streak</div>
                                 </div>
                                 <div class="lb-acc">91%</div>
                                 <div class="lb-pts">3,410</div>
@@ -1699,8 +2189,8 @@
                             <div class="lb-r">
                                 <div class="lb-pos">04</div>
                                 <div class="lb-ident">
-                                    <div class="lb-ident-name sinhala-text">අමාලි ද සිල්වා</div>
-                                    <div class="lb-ident-sub"><span class="sinhala-text">තොරතුරු තාක්ෂණය</span> &mdash; 5-day streak</div>
+                                    <div class="lb-ident-name">Amali de Silva</div>
+                                    <div class="lb-ident-sub">Information Technology &mdash; 5-day streak</div>
                                 </div>
                                 <div class="lb-acc">88%</div>
                                 <div class="lb-pts">3,205</div>
@@ -1708,8 +2198,8 @@
                             <div class="lb-r">
                                 <div class="lb-pos">05</div>
                                 <div class="lb-ident">
-                                    <div class="lb-ident-name sinhala-text">රුවන් පතිරණ</div>
-                                    <div class="lb-ident-sub"><span class="sinhala-text">භෞතික විද්‍යාව</span> &mdash; 4-day streak</div>
+                                    <div class="lb-ident-name">Ruwan Pathirana</div>
+                                    <div class="lb-ident-sub">Physics &mdash; 4-day streak</div>
                                 </div>
                                 <div class="lb-acc">86%</div>
                                 <div class="lb-pts">3,098</div>
@@ -2010,6 +2500,7 @@
     </footer>
 
     <script>
+        // ── Scroll reveals ──
         const io = new IntersectionObserver((entries) => {
             entries.forEach(e => {
                 if (e.isIntersecting) {
@@ -2039,6 +2530,57 @@
                 const t = document.querySelector(a.getAttribute('href'));
                 if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
             });
+        });
+
+        // ── Dark / Light mode toggle ──
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        // Restore saved preference
+        const savedTheme = localStorage.getItem('akura-theme');
+        if (savedTheme === 'dark') html.setAttribute('data-theme', 'dark');
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                localStorage.setItem('akura-theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('akura-theme', 'dark');
+            }
+        });
+
+        // ── Full-screen glass overlay (mobile hamburger) ──
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+
+        function openOverlay() {
+            mobileOverlay.classList.add('open');
+            hamburgerBtn.classList.add('open');
+            mobileOverlay.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeOverlay() {
+            mobileOverlay.classList.remove('open');
+            hamburgerBtn.classList.remove('open');
+            mobileOverlay.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        hamburgerBtn.addEventListener('click', () => {
+            mobileOverlay.classList.contains('open') ? closeOverlay() : openOverlay();
+        });
+
+        // Close when a nav link inside overlay is tapped
+        mobileOverlay.querySelectorAll('a').forEach(a => {
+            a.addEventListener('click', closeOverlay);
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeOverlay();
         });
     </script>
 </body>
