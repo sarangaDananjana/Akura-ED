@@ -29,6 +29,11 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://www.akuraedu.com',
+    'https://akuraedu.com',
+]
+
 
 # Application definition
 
