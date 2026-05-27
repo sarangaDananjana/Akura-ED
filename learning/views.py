@@ -5,9 +5,9 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .models import SubCourse, Flashcard, MCQQuestion, MCQOption
+from .models import Course, SubCourse, Flashcard, MCQQuestion, MCQOption
 from .serializers import (
-    SubCourseSerializer, FlashcardSerializer,
+    CourseSerializer, SubCourseSerializer, FlashcardSerializer,
     MCQQuestionSerializer, MCQOptionSerializer
 )
 
@@ -153,6 +153,12 @@ class SyncPullView(APIView):
 # --- Custom Admin Panel Views ---
 # All views here require the user to have an Admin account (is_staff=True)
 
+class AdminCourseViewSet(viewsets.ModelViewSet):
+    """CRUD operations for Courses in Custom Admin Panel."""
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = [permissions.IsAdminUser]
+
 
 class AdminSubCourseViewSet(viewsets.ModelViewSet):
     """CRUD operations for SubCourses in Custom Admin Panel."""
@@ -185,6 +191,13 @@ class AdminMCQOptionViewSet(viewsets.ModelViewSet):
 
 # --- Standard User (Read-Only) Views ---
 # These endpoints allow authenticated users to fetch the curriculum data.
+
+class ReadOnlyCourseViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only operations for Courses."""
+    queryset = Course.objects.filter(is_active=True)
+    serializer_class = CourseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
 
 class ReadOnlySubCourseViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only operations for SubCourses."""

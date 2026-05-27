@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import SubCourse, Flashcard, MCQQuestion, MCQOption
+from .models import Course, SubCourse, Flashcard, MCQQuestion, MCQOption
+
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = '__all__'
 
 
 class SubCourseSerializer(serializers.ModelSerializer):
