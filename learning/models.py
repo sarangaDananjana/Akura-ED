@@ -12,7 +12,7 @@ class Course(models.Model):
 
 
 class SubCourse(models.Model):
-    course = models.ForeignKey(Course, related_name='subcourses', on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, related_name='subcourses', on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
