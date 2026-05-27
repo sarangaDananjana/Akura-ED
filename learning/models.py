@@ -3,8 +3,8 @@ from django.conf import settings
 
 
 class Course(models.Model):
-    title = models.CharField(max_length=255, blank=True)
-    description = models.TextField(blank=True)
+    title = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
