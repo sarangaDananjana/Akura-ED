@@ -3,7 +3,7 @@ from django.conf import settings
 
 
 class Course(models.Model):
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
 
