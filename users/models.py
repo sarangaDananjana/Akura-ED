@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+import uuid
 
 
 class CustomUser(AbstractUser):
@@ -13,6 +14,7 @@ class CustomUser(AbstractUser):
 
     # Add any other profile fields you might need
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    auth_version = models.UUIDField(default=uuid.uuid4, editable=False)
 
     def __str__(self):
         return f"{self.username}"

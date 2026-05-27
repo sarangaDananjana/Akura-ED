@@ -1,7 +1,7 @@
 from rest_framework import viewsets, generics, permissions
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import get_user_model
-from .serializers import CustomTokenObtainPairSerializer, UserSerializer, UserCreateSerializer
+from .serializers import CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer, UserSerializer, UserCreateSerializer
 
 User = get_user_model()
 
@@ -11,6 +11,11 @@ User = get_user_model()
 class CustomTokenObtainPairView(TokenObtainPairView):
     """Login endpoint generating JWT."""
     serializer_class = CustomTokenObtainPairSerializer
+
+
+class CustomTokenRefreshView(TokenRefreshView):
+    """Refresh endpoint preserving custom claims."""
+    serializer_class = CustomTokenRefreshSerializer
 
 
 class RegisterView(generics.CreateAPIView):
