@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Podda by Akura Academy</title>
+    
+    <!-- Tailwind CSS (CDN for standalone file) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#F7F5F0',
+                        foreground: '#0C0C0A',
+                        primary: '#1A3D2B',
+                        surface: '#FFFFFF',
+                        border: '#D4D0C8'
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts: Premium Serif and Clean Sans-Serif -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel (For JSX compilation in browser) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    
+    <!-- Lucide Icons (Browser build) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            background-color: #F7F5F0;
+            color: #0C0C0A;
+            margin: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Subtle Glassmorphism utilities */
+        .glass-nav {
+            background: rgba(247, 245, 240, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(212, 208, 200, 0.4);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(212, 208, 200, 0.5);
+        }
+
+        /* Marquee Animation */
+        @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            animation: marquee 25s linear infinite;
+        }
+
+        /* AI Blinking Cursor */
+        .blinking-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.1em;
+            background-color: #0C0C0A;
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+            margin-left: 3px;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F7F5F0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D4D0C8;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #1A3D2B;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        const { useState, useEffect, useRef } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        // --- Helper Components ---
+
+        // Lucide Icon Wrapper for React UMD
+        const Icon = ({ name, size = 24, className = "" }) => {
+            const iconRef = useRef(null);
+            
+            useEffect(() => {
+                if (iconRef.current) {
+                    iconRef.current.innerHTML = '';
+                    const i = document.createElement('i');
+                    i.setAttribute('data-lucide', name);
+                    i.setAttribute('class', className);
+                    iconRef.current.appendChild(i);
+                    lucide.createIcons({ root: iconRef.current, attrs: { width: size, height: size } });
+                }
+            }, [name, size, className]);
+
+            return <span ref={iconRef} className={`inline-flex items-center justify-center ${className}`}></span>;
+        };
+
+        // --- Layout Sections ---
+
+        const Navigation = () => (
+            <motion.nav 
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+                className="fixed top-0 w-full z-50 glass-nav px-6 py-4"
+            >
+                <div className="max-w-7xl mx-auto flex justify-between items-center">
+                    <div className="flex items-center gap-3 cursor-pointer group">
+                        <span className="font-serif font-bold text-2xl text-primary group-hover:opacity-80 transition-opacity">Akura Academy</span>
+                        <span className="text-[11px] font-sans font-medium px-2.5 py-1 bg-primary/10 text-primary rounded-full border border-primary/20 tracking-wide uppercase">Exam Podda</span>
+                    </div>
+                    
+                    <div className="hidden md:flex gap-10 font-sans text-sm font-medium tracking-wide">
+                        {['Features', 'Leaderboard', 'Badges', 'AI Assistant'].map((item) => (
+                            <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} className="text-foreground/70 hover:text-primary transition-colors cursor-pointer relative group">
+                                {item}
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
+                            </a>
+                        ))}
+                    </div>
+                    
+                    <motion.button 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-foreground text-surface px-6 py-2.5 rounded-full font-sans text-sm font-medium hover:shadow-lg hover:shadow-foreground/20 transition-all hidden md:block"
+                    >
+                        Download
+                    </motion.button>
+
+                    <button className="md:hidden text-foreground">
+                        <Icon name="menu" size={24} />
+                    </button>
+                </div>
+            </motion.nav>
+        );
+
+        const Hero = () => {
+            const containerVariants = {
+                hidden: { opacity: 0 },
+                show: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.15, delayChildren: 0.2 }
+                }
+            };
+            const itemVariants = {
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0.4 } }
+            };
+
+            return (
+                <section className="pt-48 pb-24 px-6 max-w-7xl mx-auto flex flex-col items-center text-center">
+                    <motion.div variants={containerVariants} initial="hidden" animate="show" className="flex flex-col items-center">
+                        
+                        <motion.div variants={itemVariants} className="mb-8">
+                            <span className="uppercase tracking-[0.25em] text-xs font-bold text-primary bg-primary/5 px-4 py-2 rounded-full border border-primary/10">
+                                Introducing Exam Podda
+                            </span>
+                        </motion.div>
+                        
+                        <motion.h1 variants={itemVariants} className="font-serif text-5xl md:text-7xl lg:text-[5.5rem] leading-[1.1] tracking-tight max-w-5xl mb-8 text-foreground">
+                            The exam preparation app <br className="hidden md:block" />
+                            <span className="italic text-primary">that works.</span>
+                        </motion.h1>
+                        
+                        <motion.p variants={itemVariants} className="font-sans text-lg md:text-xl text-foreground/75 max-w-2xl mb-12 leading-relaxed tracking-wide">
+                            Akura Academy built Exam Podda for students who want more than passive reading. Practice MCQs, master concepts with flashcards, compete on the leaderboard, and earn your way to the top.
+                        </motion.p>
+                        
+                        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
+                            <motion.button 
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                className="bg-primary text-surface px-8 py-4 rounded-full font-sans font-medium text-lg shadow-xl shadow-primary/20 flex items-center justify-center gap-2 group"
+                            >
+                                Download Free
+                                <Icon name="arrow-right" size={20} className="group-hover:translate-x-1 transition-transform" />
+                            </motion.button>
+                            <motion.button 
+                                whileHover={{ scale: 1.03, backgroundColor: "rgba(12, 12, 10, 0.03)" }}
+                                whileTap={{ scale: 0.97 }}
+                                className="border border-border text-foreground px-8 py-4 rounded-full font-sans font-medium text-lg hover:border-foreground/30 transition-all bg-surface/50"
+                            >
+                                Explore Features
+                            </motion.button>
+                        </motion.div>
+
+                    </motion.div>
+                </section>
+            );
+        };
+
+        const StatsStrip = () => {
+            const stats = [
+                { value: "10K+", label: "Active students across all subjects" },
+                { value: "50K+", label: "Practice questions built by educators" },
+                { value: "98%", label: "Student satisfaction score" },
+                { value: "4.9", label: "App store rating" }
+            ];
+
+            return (
+                <section className="py-16 px-6 border-y border-border/60 bg-surface/40 relative">
+                    <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-8 divide-x-0 md:divide-x divide-border/60">
+                        {stats.map((stat, idx) => (
+                            <motion.div 
+                                key={idx}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: "-50px" }}
+                                transition={{ delay: idx * 0.1, duration: 0.6 }}
+                                className="flex flex-col items-center text-center px-4"
+                            >
+                                <span className="font-serif text-4xl md:text-5xl font-medium text-foreground mb-3">{stat.value}</span>
+                                <span className="font-sans text-sm text-foreground/60 max-w-[160px] leading-relaxed font-medium uppercase tracking-wider">{stat.label}</span>
+                            </motion.div>
+                        ))}
+                    </div>
+                </section>
+            );
+        };
+
+        const Marquee = () => {
+            const subjects = ["Economics", "Political Science", "Geography", "Buddhism", "Logic", "English", "Mathematics", "History", "LLB Exam"];
+            
+            return (
+                <div className="py-8 border-b border-border/60 overflow-hidden flex whitespace-nowrap bg-background">
+                    <div className="animate-marquee flex gap-12 items-center min-w-max">
+                        {[...subjects, ...subjects, ...subjects, ...subjects].map((subject, idx) => (
+                            <div key={idx} className="flex items-center gap-12">
+                                <span className="font-serif italic text-2xl text-foreground/40">{subject}</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary/20"></span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const BentoFeatures = () => {
+            const container = {
+                hidden: { opacity: 0 },
+                show: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.1 }
+                }
+            };
+            const item = {
+                hidden: { opacity: 0, y: 40 },
+                show: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0.4 } }
+            };
+
+            return (
+                <section id="features" className="py-32 px-6 max-w-7xl mx-auto">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        className="mb-16 md:mb-24 text-center md:text-left"
+                    >
+                        <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-tight mb-6">
+                            Everything a <span className="italic text-primary">serious student</span> needs.
+                        </h2>
+                        <p className="font-sans text-foreground/60 text-lg max-w-2xl">
+                            Designed with learning science at its core. No fluff, just the tools that actually build lasting knowledge.
+                        </p>
+                    </motion.div>
+
+                    <motion.div 
+                        variants={container}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, margin: "-100px" }}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[minmax(320px,auto)]"
+                    >
+                        {/* Feature 1 - Large spanning col */}
+                        <motion.div 
+                            variants={item}
+                            whileHover={{ scale: 1.01 }}
+                            className="md:col-span-2 bg-surface border border-border rounded-[2rem] p-10 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all relative overflow-hidden group"
+                        >
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-150 duration-700"></div>
+                            <div className="relative z-10">
+                                <div className="w-14 h-14 rounded-2xl bg-foreground text-surface flex items-center justify-center mb-6 shadow-md">
+                                    <Icon name="check-square" size={28} />
+                                </div>
+                                <h3 className="font-serif text-3xl font-semibold mb-4">MCQ Practice</h3>
+                                <p className="font-sans text-foreground/70 leading-relaxed text-lg max-w-md">
+                                    Thousands of verified questions with instant explanations. Build accuracy and speed through focused, repetitive testing.
+                                </p>
+                            </div>
+                        </motion.div>
+
+                        {/* Feature 2 - Single col, Accent colored */}
+                        <motion.div 
+                            variants={item}
+                            whileHover={{ scale: 1.02 }}
+                            className="bg-primary text-surface rounded-[2rem] p-10 flex flex-col justify-between shadow-lg shadow-primary/10 transition-all group overflow-hidden relative"
+                        >
+                            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:20px_20px] opacity-20"></div>
+                            <div className="relative z-10">
+                                <div className="w-14 h-14 rounded-2xl bg-surface/20 text-surface flex items-center justify-center mb-6 backdrop-blur-md">
+                                    <Icon name="trophy" size={28} />
+                                </div>
+                                <h3 className="font-serif text-3xl font-semibold mb-4">Live Leaderboard</h3>
+                                <p className="font-sans text-surface/80 leading-relaxed text-lg">
+                                    Real-time global rankings based on accuracy and consistency. Prove you're the best.
+                                </p>
+                            </div>
+                        </motion.div>
+
+                        {/* Feature 3 - Single col */}
+                        <motion.div 
+                            variants={item}
+                            whileHover={{ scale: 1.02 }}
+                            className="glass-card rounded-[2rem] p-10 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all"
+                        >
+                            <div>
+                                <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6">
+                                    <Icon name="layers" size={28} />
+                                </div>
+                                <h3 className="font-serif text-3xl font-semibold mb-4">Flashcard System</h3>
+                                <p className="font-sans text-foreground/70 leading-relaxed text-lg">
+                                    Swipe-based active recall with intelligent spaced repetition for maximum retention.
+                                </p>
+                            </div>
+                        </motion.div>
+
+                        {/* Feature 4 - Large spanning col */}
+                        <motion.div 
+                            variants={item}
+                            whileHover={{ scale: 1.01 }}
+                            className="md:col-span-2 bg-surface border border-border rounded-[2rem] p-10 flex flex-col sm:flex-row gap-8 items-center shadow-sm hover:shadow-xl transition-all"
+                        >
+                            <div className="flex-1">
+                                <div className="w-14 h-14 rounded-2xl bg-border/50 text-foreground flex items-center justify-center mb-6">
+                                    <Icon name="medal" size={28} />
+                                </div>
+                                <h3 className="font-serif text-3xl font-semibold mb-4">Achievement Badges</h3>
+                                <p className="font-sans text-foreground/70 leading-relaxed text-lg">
+                                    30+ unique badges for reaching milestones and maintaining streaks. Gamify your study routine and stay motivated.
+                                </p>
+                            </div>
+                            <div className="flex-1 grid grid-cols-3 gap-4 w-full">
+                                {[1,2,3,4,5,6].map(i => (
+                                    <div key={i} className="aspect-square rounded-full bg-background border border-border flex items-center justify-center shadow-inner">
+                                        <Icon name="star" size={20} className="text-primary/40" />
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                    </motion.div>
+                </section>
+            );
+        };
+
+        const AIAssistantTeaser = () => {
+            return (
+                <section id="ai-assistant" className="py-32 px-6 bg-[#0C0C0A] text-surface overflow-hidden relative rounded-t-[3rem] md:rounded-t-[4rem]">
+                    <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                        >
+                            <div className="inline-block px-4 py-1.5 rounded-full border border-surface/20 text-xs font-sans tracking-widest uppercase mb-8 text-surface/60">
+                                Coming Soon
+                            </div>
+                            <h2 className="font-serif text-5xl md:text-6xl tracking-tight mb-8">
+                                Your personal <br/>
+                                <span className="italic text-[#A0D9B9]">AI tutor</span> is almost here.
+                            </h2>
+                            <p className="font-sans text-surface/60 text-xl leading-relaxed mb-10 max-w-lg">
+                                Ask it anything, get personalized revision plans, and step-by-step walkthroughs tailored just for your learning pace.
+                            </p>
+                            <button className="bg-surface text-foreground hover:bg-surface/90 px-8 py-4 rounded-full font-sans font-medium transition-colors shadow-lg">
+                                Join the Waitlist
+                            </button>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, rotateX: 10 }}
+                            whileInView={{ opacity: 1, scale: 1, rotateX: 0 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ type: "spring", bounce: 0.3, duration: 1 }}
+                            className="bg-[#151515] border border-surface/10 rounded-[2rem] p-6 md:p-8 relative shadow-2xl"
+                            style={{ perspective: 1000 }}
+                        >
+                            {/* Browser/Window Controls */}
+                            <div className="flex gap-2 mb-8 border-b border-surface/10 pb-4">
+                                <div className="w-3 h-3 rounded-full bg-surface/20"></div>
+                                <div className="w-3 h-3 rounded-full bg-surface/20"></div>
+                                <div className="w-3 h-3 rounded-full bg-surface/20"></div>
+                            </div>
+                            
+                            <div className="space-y-8 font-sans">
+                                {/* User Message */}
+                                <div className="flex gap-4 items-start">
+                                    <div className="w-10 h-10 rounded-full bg-surface/10 flex items-center justify-center shrink-0">
+                                        <Icon name="user" size={18} className="text-surface/70" />
+                                    </div>
+                                    <div className="bg-surface/5 border border-surface/10 rounded-2xl rounded-tl-sm p-5 text-[15px] text-surface/90">
+                                        Can you explain Newton's First Law simply?
+                                    </div>
+                                </div>
+                                
+                                {/* AI Message */}
+                                <div className="flex gap-4 items-start">
+                                    <div className="w-10 h-10 rounded-full bg-[#1A3D2B] flex items-center justify-center shrink-0 shadow-lg shadow-[#1A3D2B]/30">
+                                        <Icon name="bot" size={18} className="text-surface" />
+                                    </div>
+                                    <div className="bg-[#1A3D2B]/20 border border-[#1A3D2B]/40 rounded-2xl rounded-tr-sm p-5 text-[15px] text-surface/90 w-full leading-relaxed">
+                                        <p className="mb-3">Of course! Newton's First Law (Law of Inertia) means:</p>
+                                        <p className="mb-3 text-[#A0D9B9] italic">
+                                            "An object at rest stays at rest, and an object in motion stays in motion with the same speed and in the same direction unless acted upon by an unbalanced force."
+                                        </p>
+                                        <p>Think of a book on a table. It won't move unless you push it! <span className="blinking-cursor"></span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                </section>
+            );
+        };
+
+        const BottomCTA = () => {
+            return (
+                <section className="py-40 px-6 text-center max-w-4xl mx-auto">
+                    <motion.h2 
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="font-serif text-5xl md:text-7xl tracking-tight mb-12"
+                    >
+                        Start learning <span className="italic text-primary">properly.</span>
+                    </motion.h2>
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        className="flex flex-col sm:flex-row justify-center gap-6"
+                    >
+                        <button className="bg-foreground text-surface px-8 py-4 rounded-2xl flex items-center justify-center gap-4 hover:-translate-y-1 transition-transform shadow-xl hover:shadow-foreground/20 w-full sm:w-auto">
+                            <Icon name="apple" size={28} />
+                            <div className="text-left">
+                                <div className="text-[10px] opacity-70 uppercase tracking-widest font-sans">Download on the</div>
+                                <div className="font-semibold text-xl leading-none mt-1 font-sans">App Store</div>
+                            </div>
+                        </button>
+                        <button className="bg-foreground text-surface px-8 py-4 rounded-2xl flex items-center justify-center gap-4 hover:-translate-y-1 transition-transform shadow-xl hover:shadow-foreground/20 w-full sm:w-auto">
+                            <Icon name="play" size={28} />
+                            <div className="text-left">
+                                <div className="text-[10px] opacity-70 uppercase tracking-widest font-sans">GET IT ON</div>
+                                <div className="font-semibold text-xl leading-none mt-1 font-sans">Google Play</div>
+                            </div>
+                        </button>
+                    </motion.div>
+                </section>
+            );
+        };
+
+        const Footer = () => (
+            <footer className="border-t border-border/60 py-12 px-6">
+                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+                    <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+                        <div className="flex items-center gap-3">
+                            <span className="font-serif font-bold text-2xl text-primary">Akura Academy</span>
+                        </div>
+                        <span className="hidden md:block w-1 h-1 rounded-full bg-border"></span>
+                        <span className="font-serif italic text-lg text-foreground/60">Learn. Practice. Achieve.</span>
+                    </div>
+                    <div className="flex gap-8 font-sans text-sm font-medium text-foreground/60">
+                        <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
+                        <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
+                        <a href="#" className="hover:text-primary transition-colors">Support</a>
+                    </div>
+                </div>
+                <div className="max-w-7xl mx-auto mt-8 text-center md:text-left font-sans text-sm text-foreground/40">
+                    © {new Date().getFullYear()} Akura Academy. All rights reserved.
+                </div>
+            </footer>
+        );
+
+        const App = () => {
+            return (
+                <div className="min-h-screen selection:bg-primary/20 selection:text-primary">
+                    <Navigation />
+                    <main>
+                        <Hero />
+                        <StatsStrip />
+                        <Marquee />
+                        <BentoFeatures />
+                        <AIAssistantTeaser />
+                        <BottomCTA />
+                    </main>
+                    <Footer />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
