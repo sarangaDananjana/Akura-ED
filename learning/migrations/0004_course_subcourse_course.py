@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('learning', '0002_initial'),
+        ('learning', '0003_delete_flashcardprogress'),
     ]
 
     operations = [
@@ -24,8 +24,5 @@ class Migration(migrations.Migration):
             model_name='subcourse',
             name='course',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='subcourses', to='learning.course'),
-        ),
-        migrations.DeleteModel(
-            name='FlashcardProgress',
         ),
     ]
