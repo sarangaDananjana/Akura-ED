@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     AdminCourseViewSet, AdminSubCourseViewSet, AdminFlashcardViewSet,
-    AdminMCQQuestionViewSet, AdminMCQOptionViewSet,
+    AdminMCQQuestionViewSet, AdminMCQOptionViewSet, AdminCSVUploadView,
     SyncPushView, SyncPullView,
     ReadOnlyCourseViewSet, ReadOnlySubCourseViewSet, ReadOnlyFlashcardViewSet,
     ReadOnlyMCQQuestionViewSet
@@ -28,5 +28,6 @@ router.register(r'mcqs', ReadOnlyMCQQuestionViewSet, basename='mcqs')
 urlpatterns = [
     path('sync/push/', SyncPushView.as_view(), name='sync-push'),
     path('sync/pull/', SyncPullView.as_view(), name='sync-pull'),
+    path('admin/csv-upload/', AdminCSVUploadView.as_view(), name='admin-csv-upload'),
     path('', include(router.urls)),
 ]

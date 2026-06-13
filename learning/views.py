@@ -5,6 +5,8 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+import csv
+import io
 from .models import Course, SubCourse, Flashcard, MCQQuestion, MCQOption
 from .serializers import (
     CourseSerializer, SubCourseSerializer, FlashcardSerializer,
@@ -218,3 +220,108 @@ class ReadOnlyMCQQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = MCQQuestion.objects.all()
     serializer_class = MCQQuestionSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class AdminCSVUploadView(APIView):
+    """
+    API endpoint for Admin to upload a CSV file and bulk create
+    Flashcards or MCQs for a specific SubCourse.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        upload_type = request.data.get('type')
+        subcourse_id = request.data.get('subcourse_id')
+        start_row = int(request.data.get('start_row', 1))
+        end_row = int(request.data.get('end_row', -1))
+        file = request.FILES.get('file')
+
+        if not all([upload_type, subcourse_id, file]):
+            return Response({"error": "Missing required fields (type, subcourse_id, file)."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            subcourse = SubCourse.objects.get(id=subcourse_id)
+        except SubCourse.DoesNotExist:
+            return Response({"error": "SubCourse not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # Read and decode CSV
+            decoded_file = file.read().decode('utf-8')
+            io_string = io.StringIO(decoded_file)
+            reader = csv.reader(io_string)
+            rows = list(reader)
+
+            # Find the header row (assuming it contains 'Question_ID' or 'Question_Text')
+            header_idx = -1
+            for idx, row in enumerate(rows):
+                if row and any(cell.strip().lower() == 'question_id' for cell in row):
+                    header_idx = idx
+                    break
+            
+            if header_idx == -1:
+                return Response({"error": "Could not find header row containing 'Question_ID'."}, status=status.HTTP_400_BAD_REQUEST)
+
+            headers = [h.strip() for h in rows[header_idx]]
+            data_rows = rows[header_idx + 1:]
+
+            if end_row == -1 or end_row > len(data_rows):
+                end_row = len(data_rows)
+            
+            if start_row < 1:
+                start_row = 1
+
+            # Slicing the data rows (start_row is 1-based index)
+            target_rows = data_rows[start_row - 1 : end_row]
+
+            created_count = 0
+
+            if upload_type == 'flashcard':
+                for row_data in target_rows:
+                    row_dict = dict(zip(headers, row_data))
+                    q_text = row_dict.get('Question_Text', '').strip()
+                    ans_text = row_dict.get('Correct_Description', '').strip()
+
+                    if q_text and ans_text:
+                        Flashcard.objects.create(
+                            subcourse=subcourse,
+                            question_text=q_text,
+                            answer_text=ans_text
+                        )
+                        created_count += 1
+                        
+            elif upload_type == 'mcq':
+                for row_data in target_rows:
+                    row_dict = dict(zip(headers, row_data))
+                    q_text = row_dict.get('Question_Text', '').strip()
+                    if not q_text:
+                        continue
+                    
+                    question = MCQQuestion.objects.create(
+                        subcourse=subcourse,
+                        text=q_text
+                    )
+                    
+                    for i in range(1, 6):
+                        opt_text = row_dict.get(f'Option_{i}', '').strip()
+                        opt_status = row_dict.get(f'Status_{i}', '').strip().lower()
+                        
+                        if opt_text:
+                            is_correct = (opt_status == 'correct')
+                            MCQOption.objects.create(
+                                question=question,
+                                text=opt_text,
+                                is_correct=is_correct
+                            )
+                    created_count += 1
+            else:
+                return Response({"error": "Invalid upload type. Must be 'flashcard' or 'mcq'."}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({
+                "message": f"Successfully created {created_count} {upload_type}(s)."
+            }, status=status.HTTP_201_CREATED)
+
+        except UnicodeDecodeError:
+             # Try utf-8-sig or latin-1 if utf-8 fails
+             return Response({"error": "File encoding not supported. Please save as UTF-8 CSV."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
