@@ -24,8 +24,8 @@
             --white: #FDFCFA;
             --ink: #0C0C0A;
             --ink2: #1E1E1B;
-            --forest: #1A3D2B;
-            --forest2: #2C5C3F;
+            --forest: #135ACE;
+            --forest2: #33BC8E;
             --muted: #6A6860;
             --border: #D4D0C8;
             --surface: #EDEAE2;
@@ -106,7 +106,6 @@
             width: 36px;
             height: 36px;
             object-fit: contain;
-            filter: brightness(0);
         }
 
         /* fallback SVG if no img present */
@@ -610,7 +609,7 @@
         }
 
         .tag-green {
-            background: #D4E8DC;
+            background: #E0EBFA;
             color: var(--forest);
         }
 
@@ -1402,8 +1401,8 @@
             --white: #161614;
             --ink: #F0EDE6;
             --ink2: #D8D5CD;
-            --forest: #6DB88A;
-            --forest2: #4E9A6A;
+            --forest: #5C95FF;
+            --forest2: #33BC8E;
             --muted: #8A8780;
             --border: #2C2C2A;
             --surface: #1A1A18;
@@ -1432,7 +1431,7 @@
         }
 
         [data-theme="dark"] .logo-mark img {
-            filter: brightness(0) invert(1);
+            filter: none;
         }
 
         /* marquee strip in dark mode */
@@ -1860,10 +1859,10 @@
     <nav>
         <a href="https://www.akuraedu.com/#" class="nav-logo">
             <div class="logo-mark">
-                <img src="{% static 'exam_podda_logo.png' %}" alt="Akura">
+                <img src="{% static 'Logo.png' %}" alt="Akura">
             </div>
-            <div class="nav-wordmark sinhala-text">
-                අකුර අධ්‍යාපන ආයතනය
+            <div class="nav-wordmark">
+                Akura Acadomy
                 <small style="font-family: var(--ff-sans);">Exam Podda</small>
             </div>
         </a>
@@ -1945,14 +1944,17 @@
             </div>
         </div>
 
-        <span class="overlay-brand">Akura Acadamy</span>
+        <span class="overlay-brand">Akura Acadomy</span>
     </div>
 
     <!-- ── HERO ── -->
     <section class="hero">
-        <div class="hero-tag">Akura Acadamy &mdash; Est. 2024</div>
+        <div class="hero-tag">Akura Acadomy &mdash; Est. 2024</div>
 
-        <div class="hero-label">Introducing Exam Podda</div>
+        <div class="hero-label">
+            <img src="{% static 'exam_podda_logo.png' %}" alt="Exam Podda Logo" style="height: 32px; width: auto; object-fit: contain;">
+            Introducing Exam Podda
+        </div>
 
         <h1 class="hero-headline">
             The exam<br>
@@ -2048,7 +2050,7 @@
             <div class="about-grid">
                 <div class="about-left reveal">
                     <h2>Education built on<br><em>depth,</em> not distraction.</h2>
-                    <p>Akura Acadamy was founded with a single conviction: that every student deserves a
+                    <p>Akura Acadomy was founded with a single conviction: that every student deserves a
                         rigorous, engaging path to exam success. Exam Podda is how we deliver on that promise.</p>
                     <p>We combine carefully curated question banks, proven active-recall techniques, and healthy
                         competitive elements to build real, lasting knowledge — not just exam-day confidence.</p>
@@ -2455,9 +2457,9 @@
             <div class="footer-brand">
                 <div class="logo-area">
                     <div class="logo-mark">
-                        <img src="{% static 'exam_podda_logo.png' %}" alt="Akura">
+                        <img src="{% static 'Logo.png' %}" alt="Akura">
                     </div>
-                    <div class="nav-wordmark">Akura Acadamy<small>Exam Podda</small></div>
+                    <div class="nav-wordmark">Akura Acadomy<small>Exam Podda</small></div>
                 </div>
                 <p>Building rigorous, engaging exam preparation for every student. Practice MCQs, master flashcards,
                     compete on the leaderboard — and learn the right way.</p>
@@ -2494,7 +2496,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>&copy; 2025 Akura Acadamy. All rights reserved.</span>
+            <span>&copy; 2025 Akura Acadomy. All rights reserved.</span>
             <span>Learn. Practice. Achieve.</span>
         </div>
     </footer>
