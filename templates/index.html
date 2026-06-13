@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akura Acadamy — Exam Podda</title>
+    <title>Akura Academy — Exam Podda</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,600&family=Sora:wght@300;400;500;600&display=swap"
@@ -1430,7 +1430,11 @@
             background: rgba(14, 14, 12, 0.93);
         }
 
-        [data-theme="dark"] .logo-mark img {
+        [data-theme="dark"] .logo-mark img,
+        [data-theme="dark"] .hero-label img {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 4px;
+            border-radius: 6px;
             filter: none;
         }
 
@@ -1851,6 +1855,14 @@
                 display: none;
             }
         }
+    
+        h1 em, h2 em, .num-big em, .stat-n span {
+            background: linear-gradient(135deg, var(--forest), var(--forest2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
     </style>
 </head>
 
@@ -1862,7 +1874,7 @@
                 <img src="{% static 'Logo.png' %}" alt="Akura">
             </div>
             <div class="nav-wordmark">
-                Akura Acadomy
+                Akura Academy
                 <small style="font-family: var(--ff-sans);">Exam Podda</small>
             </div>
         </a>
@@ -1944,15 +1956,15 @@
             </div>
         </div>
 
-        <span class="overlay-brand">Akura Acadomy</span>
+        <span class="overlay-brand">Akura Academy</span>
     </div>
 
     <!-- ── HERO ── -->
     <section class="hero">
-        <div class="hero-tag">Akura Acadomy &mdash; Est. 2024</div>
+        <div class="hero-tag">Akura Academy &mdash; Est. 2024</div>
 
         <div class="hero-label">
-            <img src="{% static 'exam_podda_logo.png' %}" alt="Exam Podda Logo" style="height: 32px; width: auto; object-fit: contain;">
+            <img src="{% static 'exam_podda_logo.png' %}" alt="Exam Podda Logo" style="height: 56px; width: auto; object-fit: contain; margin-right: 8px;">
             Introducing Exam Podda
         </div>
 
@@ -1964,7 +1976,7 @@
 
         <div class="hero-bottom">
             <p class="hero-desc">
-                Akura Acadamy built Exam Podda for students who want more than passive reading. Practice
+                Akura Academy built Exam Podda for students who want more than passive reading. Practice
                 MCQs, master concepts with flashcards, compete on the leaderboard, and earn your way to the top.
             </p>
             <div class="hero-actions">
@@ -2050,7 +2062,7 @@
             <div class="about-grid">
                 <div class="about-left reveal">
                     <h2>Education built on<br><em>depth,</em> not distraction.</h2>
-                    <p>Akura Acadomy was founded with a single conviction: that every student deserves a
+                    <p>Akura Academy was founded with a single conviction: that every student deserves a
                         rigorous, engaging path to exam success. Exam Podda is how we deliver on that promise.</p>
                     <p>We combine carefully curated question banks, proven active-recall techniques, and healthy
                         competitive elements to build real, lasting knowledge — not just exam-day confidence.</p>
@@ -2459,7 +2471,7 @@
                     <div class="logo-mark">
                         <img src="{% static 'Logo.png' %}" alt="Akura">
                     </div>
-                    <div class="nav-wordmark">Akura Acadomy<small>Exam Podda</small></div>
+                    <div class="nav-wordmark">Akura Academy<small>Exam Podda</small></div>
                 </div>
                 <p>Building rigorous, engaging exam preparation for every student. Practice MCQs, master flashcards,
                     compete on the leaderboard — and learn the right way.</p>
@@ -2496,7 +2508,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>&copy; 2025 Akura Acadomy. All rights reserved.</span>
+            <span>&copy; 2025 Akura Academy. All rights reserved.</span>
             <span>Learn. Practice. Achieve.</span>
         </div>
     </footer>
