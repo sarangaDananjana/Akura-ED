@@ -7,9 +7,9 @@ from rest_framework.response import Response
 
 import csv
 import io
-from .models import Course, SubCourse, Flashcard, MCQQuestion, MCQOption
+from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption
 from .serializers import (
-    CourseSerializer, SubCourseSerializer, FlashcardSerializer,
+    DomainSerializer, CourseSerializer, SubCourseSerializer, FlashcardSerializer,
     MCQQuestionSerializer, MCQOptionSerializer
 )
 
@@ -155,6 +155,13 @@ class SyncPullView(APIView):
 # --- Custom Admin Panel Views ---
 # All views here require the user to have an Admin account (is_staff=True)
 
+class AdminDomainViewSet(viewsets.ModelViewSet):
+    """CRUD operations for Domains in Custom Admin Panel."""
+    queryset = Domain.objects.all()
+    serializer_class = DomainSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
 class AdminCourseViewSet(viewsets.ModelViewSet):
     """CRUD operations for Courses in Custom Admin Panel."""
     queryset = Course.objects.all()
@@ -194,18 +201,39 @@ class AdminMCQOptionViewSet(viewsets.ModelViewSet):
 # --- Standard User (Read-Only) Views ---
 # These endpoints allow authenticated users to fetch the curriculum data.
 
+class ReadOnlyDomainViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only operations for Domains."""
+    queryset = Domain.objects.filter(is_active=True).order_by('priority')
+    serializer_class = DomainSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
 class ReadOnlyCourseViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only operations for Courses."""
-    queryset = Course.objects.filter(is_active=True)
+    queryset = Course.objects.filter(is_active=True).order_by('priority')
     serializer_class = CourseSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        domain_id = self.request.query_params.get('domain_id')
+        if domain_id:
+            queryset = queryset.filter(domain_id=domain_id)
+        return queryset
 
 
 class ReadOnlySubCourseViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only operations for SubCourses."""
-    queryset = SubCourse.objects.filter(is_active=True)
+    queryset = SubCourse.objects.filter(is_active=True).order_by('priority')
     serializer_class = SubCourseSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        course_id = self.request.query_params.get('course_id')
+        if course_id:
+            queryset = queryset.filter(course_id=course_id)
+        return queryset
 
 
 class ReadOnlyFlashcardViewSet(viewsets.ReadOnlyModelViewSet):

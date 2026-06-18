@@ -2,10 +2,28 @@ from django.db import models
 from django.conf import settings
 
 
+class Domain(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    priority = models.IntegerField(default=0, help_text="Priority for ordering. Lower numbers appear first.")
+
+    class Meta:
+        ordering = ['priority']
+
+    def __str__(self):
+        return self.title
+
+
 class Course(models.Model):
+    domain = models.ForeignKey(Domain, related_name='courses', on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255,default="none")
     description = models.TextField(blank=True, default="none")
     is_active = models.BooleanField(default=True)
+    priority = models.IntegerField(default=0, help_text="Priority for ordering. Lower numbers appear first.")
+
+    class Meta:
+        ordering = ['priority']
 
     def __str__(self):
         return self.title
@@ -16,6 +34,10 @@ class SubCourse(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
+    priority = models.IntegerField(default=0, help_text="Priority for ordering. Lower numbers appear first.")
+
+    class Meta:
+        ordering = ['priority']
 
     def __str__(self):
         return self.title

@@ -1,15 +1,16 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    AdminCourseViewSet, AdminSubCourseViewSet, AdminFlashcardViewSet,
+    AdminDomainViewSet, AdminCourseViewSet, AdminSubCourseViewSet, AdminFlashcardViewSet,
     AdminMCQQuestionViewSet, AdminMCQOptionViewSet, AdminCSVUploadView,
     SyncPushView, SyncPullView,
-    ReadOnlyCourseViewSet, ReadOnlySubCourseViewSet, ReadOnlyFlashcardViewSet,
+    ReadOnlyDomainViewSet, ReadOnlyCourseViewSet, ReadOnlySubCourseViewSet, ReadOnlyFlashcardViewSet,
     ReadOnlyMCQQuestionViewSet
 )
 
 router = DefaultRouter()
 # Register Admin endpoints
+router.register(r'admin/domains', AdminDomainViewSet, basename='admin-domains')
 router.register(r'admin/courses', AdminCourseViewSet, basename='admin-courses')
 router.register(r'admin/subcourses', AdminSubCourseViewSet,
                 basename='admin-subcourses')
@@ -20,6 +21,7 @@ router.register(r'admin/mcq-options', AdminMCQOptionViewSet,
                 basename='admin-mcq-options')
 
 # Register Standard User endpoints
+router.register(r'domains', ReadOnlyDomainViewSet, basename='domains')
 router.register(r'courses', ReadOnlyCourseViewSet, basename='courses')
 router.register(r'subcourses', ReadOnlySubCourseViewSet, basename='subcourses')
 router.register(r'flashcards', ReadOnlyFlashcardViewSet, basename='flashcards')
