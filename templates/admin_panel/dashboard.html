@@ -80,6 +80,10 @@
                     <p class="px-4 text-xs font-bold tracking-wider text-slate-500 uppercase">Learning Engine</p>
                 </div>
 
+                <li><button onclick="switchTab('domains', this)"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-slate-800 hover:text-white"><i
+                            class="ph ph-globe text-xl"></i> <span
+                            class="font-medium text-sm">Domains</span></button></li>
                 <li><button onclick="switchTab('parentcourses', this)"
                         class="nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-slate-800 hover:text-white"><i
                             class="ph ph-folder text-xl"></i> <span
@@ -142,7 +146,11 @@
 
             <!-- TAB: Dashboard -->
             <div id="tab-dashboard" class="tab-content active">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5 transition-transform hover:-translate-y-1">
+                        <div class="w-14 h-14 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center text-2xl"><i class="ph ph-globe"></i></div>
+                        <div><p class="text-slate-500 text-sm font-semibold mb-1">Domains</p><h3 id="stat-domains" class="text-3xl font-bold text-slate-900 tracking-tight">0</h3></div>
+                    </div>
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5 transition-transform hover:-translate-y-1">
                         <div class="w-14 h-14 rounded-2xl bg-fuchsia-50 text-fuchsia-600 flex items-center justify-center text-2xl"><i class="ph ph-folder"></i></div>
                         <div><p class="text-slate-500 text-sm font-semibold mb-1">Courses</p><h3 id="stat-parentcourses" class="text-3xl font-bold text-slate-900 tracking-tight">0</h3></div>
@@ -166,14 +174,48 @@
                 </div>
             </div>
 
+            <!-- TAB: Domains -->
+            <div id="tab-domains" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">Domains</h3>
+                    <div class="flex items-center gap-4">
+                        <button onclick="openModal('domainModal')"
+                            class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm flex items-center gap-2"><i
+                                class="ph ph-plus-circle text-lg"></i> Add Domain</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold border-b border-slate-100">
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">Title</th>
+                                    <th class="px-6 py-4 w-32">Priority</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="domainTableBody" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB: Parent Courses -->
             <div id="tab-parentcourses" class="tab-content">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-lg font-bold text-slate-800">Master Courses</h3>
                     <div class="flex items-center gap-4">
                         <div class="relative">
+                            <i class="ph ph-funnel absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <select id="courseDomainFilter" onchange="fetchFilteredParentCourses()" class="pl-10 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-48 shadow-sm transition-all appearance-none cursor-pointer">
+                                <option value="all">All Domains</option>
+                            </select>
+                        </div>
+                        <div class="relative">
                             <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="parentCourseSearch" onkeyup="filterParentCourses()" placeholder="Search courses..." class="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-64 shadow-sm transition-all">
+                            <input type="text" id="parentCourseSearch" onkeyup="filterParentCoursesLocally()" placeholder="Search courses..." class="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-48 shadow-sm transition-all">
                         </div>
                         <button onclick="openModal('parentCourseModal')"
                             class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm flex items-center gap-2"><i
@@ -186,7 +228,9 @@
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold border-b border-slate-100">
                                     <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">Domain</th>
                                     <th class="px-6 py-4">Title</th>
+                                    <th class="px-6 py-4 w-32">Priority</th>
                                     <th class="px-6 py-4">Status</th>
                                     <th class="px-6 py-4 text-right">Actions</th>
                                 </tr>
@@ -203,8 +247,14 @@
                     <h3 class="text-lg font-bold text-slate-800">Course Directory</h3>
                     <div class="flex items-center gap-4">
                         <div class="relative">
+                            <i class="ph ph-funnel absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <select id="subcourseCourseFilter" onchange="fetchFilteredCourses()" class="pl-10 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-48 shadow-sm transition-all appearance-none cursor-pointer">
+                                <option value="all">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="relative">
                             <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="courseSearch" onkeyup="filterCourses()" placeholder="Search courses..." class="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-64 shadow-sm transition-all">
+                            <input type="text" id="courseSearch" onkeyup="filterCoursesLocally()" placeholder="Search courses..." class="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-48 shadow-sm transition-all">
                         </div>
                         <button onclick="openModal('courseModal')"
                             class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm flex items-center gap-2"><i
@@ -219,6 +269,7 @@
                                     <th class="px-6 py-4">ID</th>
                                     <th class="px-6 py-4">Parent Course</th>
                                     <th class="px-6 py-4">Title</th>
+                                    <th class="px-6 py-4 w-32">Priority</th>
                                     <th class="px-6 py-4">Status</th>
                                     <th class="px-6 py-4 text-right">Actions</th>
                                 </tr>
@@ -334,6 +385,40 @@
 
     <!-- ================= MODALS (Premium Glassmorphism) ================= -->
 
+    <!-- Domain Modal -->
+    <div id="domainModal"
+        class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-2xl transform scale-100 transition-transform">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6" id="domainModalTitle">Add Domain</h3>
+            <form id="domainForm" onsubmit="submitDomain(event)">
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Domain Title</label>
+                        <input type="text" id="domainTitle" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+                        <textarea id="domainDesc" rows="3"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none"></textarea>
+                    </div>
+                    <label
+                        class="flex items-center gap-3 p-4 border border-slate-100 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                        <input type="checkbox" id="domainActive"
+                            class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300" checked>
+                        <span class="text-sm font-semibold text-slate-700">Domain is Active</span>
+                    </label>
+                </div>
+                <div class="flex justify-end gap-3 mt-8">
+                    <button type="button" onclick="closeModal('domainModal')"
+                        class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+                    <button type="submit" id="domainSubmitBtn"
+                        class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition-all shadow-sm">Save Domain</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Parent Course Modal -->
     <div id="parentCourseModal"
         class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
@@ -341,6 +426,11 @@
             <h3 class="text-2xl font-bold text-slate-900 mb-6" id="parentCourseModalTitle">Add Parent Course</h3>
             <form id="parentCourseForm" onsubmit="submitParentCourse(event)">
                 <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Domain</label>
+                        <select id="pcDomainId" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none appearance-none"></select>
+                    </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Course Title</label>
                         <input type="text" id="parentCourseTitle" required
@@ -541,7 +631,7 @@
         if (!token) window.location.href = '/custom-admin/login/';
 
         // 2. Global State
-        const state = { parentcourses: [], courses: [], flashcards: [], mcqs: [], users: [] };
+        const state = { domains: [], parentcourses: [], courses: [], flashcards: [], mcqs: [], users: [] };
         let editMode = false;
         let currentEditId = null;
 
@@ -577,7 +667,7 @@
                 document.querySelector('.nav-btn').className = "nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all text-white bg-indigo-600 shadow-md shadow-indigo-900/20";
             }
 
-            const titles = { 'dashboard': 'Dashboard Overview', 'parentcourses': 'Master Courses', 'subcourses': 'Course Management', 'flashcards': 'Flashcard Repository', 'mcqs': 'MCQ Bank', 'users': 'User Accounts' };
+            const titles = { 'dashboard': 'Dashboard Overview', 'domains': 'Domains Management', 'parentcourses': 'Master Courses', 'subcourses': 'Course Management', 'flashcards': 'Flashcard Repository', 'mcqs': 'MCQ Bank', 'users': 'User Accounts' };
             document.getElementById('pageTitle').innerText = titles[tabId];
         }
 
@@ -585,7 +675,10 @@
             editMode = isEdit;
             document.getElementById(modalId).classList.remove('hidden'); 
             
-            if (modalId === 'parentCourseModal') {
+            if (modalId === 'domainModal') {
+                document.getElementById('domainModalTitle').innerText = isEdit ? 'Edit Domain' : 'Add Domain';
+                document.getElementById('domainSubmitBtn').innerText = isEdit ? 'Update Domain' : 'Save Domain';
+            } else if (modalId === 'parentCourseModal') {
                 document.getElementById('parentCourseModalTitle').innerText = isEdit ? 'Edit Parent Course' : 'Add Parent Course';
                 document.getElementById('parentCourseSubmitBtn').innerText = isEdit ? 'Update Course' : 'Save Course';
             } else if (modalId === 'courseModal') {
@@ -623,9 +716,18 @@
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
+        function populateDomainDropdowns() {
+            const options = state.domains.map(d => `<option value="${d.id}">${d.title}</option>`).join('');
+            const filterOptions = '<option value="all">All Domains</option>' + options;
+            document.getElementById('pcDomainId').innerHTML = options;
+            document.getElementById('courseDomainFilter').innerHTML = filterOptions;
+        }
+
         function populateParentCourseDropdowns() {
             const options = state.parentcourses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+            const filterOptions = '<option value="all">All Parent Courses</option>' + options;
             document.getElementById('subcourseParentId').innerHTML = options;
+            document.getElementById('subcourseCourseFilter').innerHTML = filterOptions;
         }
 
         function populateCourseDropdowns() {
@@ -653,10 +755,21 @@
         }
 
         // 5. Editing Functions
+        function editDomain(id) {
+            const d = state.domains.find(x => x.id === id);
+            if(!d) return;
+            currentEditId = id;
+            document.getElementById('domainTitle').value = d.title;
+            document.getElementById('domainDesc').value = d.description;
+            document.getElementById('domainActive').checked = d.is_active;
+            openModal('domainModal', true);
+        }
+
         function editParentCourse(id) {
             const c = state.parentcourses.find(x => x.id === id);
             if(!c) return;
             currentEditId = id;
+            document.getElementById('pcDomainId').value = c.domain;
             document.getElementById('parentCourseTitle').value = c.title;
             document.getElementById('parentCourseDesc').value = c.description;
             document.getElementById('parentCourseActive').checked = c.is_active;
@@ -707,10 +820,21 @@
 
         // 6. Fetch & Render Functions
         async function loadAllData() {
-            const pData = await apiCall('learning/admin/courses/');
+            const dData = await apiCall('learning/admin/domains/');
+            if (dData) { state.domains = dData.results || dData; document.getElementById('stat-domains').innerText = state.domains.length; renderDomains(); populateDomainDropdowns(); }
+
+            // Apply domain filter to courses fetch if selected
+            const domainFilter = document.getElementById('courseDomainFilter')?.value;
+            let courseUrl = 'learning/admin/courses/';
+            if (domainFilter && domainFilter !== 'all') { courseUrl += `?domain_id=${domainFilter}`; }
+
+            const pData = await apiCall(courseUrl);
             if (pData) { state.parentcourses = pData.results || pData; document.getElementById('stat-parentcourses').innerText = state.parentcourses.length; renderParentCourses(); populateParentCourseDropdowns(); }
 
-            const cData = await apiCall('learning/admin/subcourses/');
+            const subcourseFilter = document.getElementById('subcourseCourseFilter')?.value;
+            let subUrl = 'learning/admin/subcourses/';
+            if (subcourseFilter && subcourseFilter !== 'all') { subUrl += `?course_id=${subcourseFilter}`; }
+            const cData = await apiCall(subUrl);
             if (cData) { state.courses = cData.results || cData; document.getElementById('stat-courses').innerText = state.courses.length; renderCourses(state.courses); populateCourseDropdowns(); }
 
             const fData = await apiCall('learning/admin/flashcards/');
@@ -723,12 +847,60 @@
             if (uData) { state.users = uData.results || uData; document.getElementById('stat-users').innerText = state.users.length; renderUsers(); }
         }
 
+        function fetchFilteredParentCourses() { loadAllData(); }
+        function fetchFilteredCourses() { loadAllData(); }
+
+        async function updateDomainPriority(id, val) {
+            await apiCall(`learning/admin/domains/${id}/`, 'PATCH', { priority: parseInt(val) });
+            showToast('Domain priority updated');
+            loadAllData();
+        }
+
+        async function updateParentCoursePriority(id, val) {
+            await apiCall(`learning/admin/courses/${id}/`, 'PATCH', { priority: parseInt(val) });
+            showToast('Course priority updated');
+            loadAllData();
+        }
+
+        async function updateCoursePriority(id, val) {
+            await apiCall(`learning/admin/subcourses/${id}/`, 'PATCH', { priority: parseInt(val) });
+            showToast('Sub-Course priority updated');
+            loadAllData();
+        }
+
+        function renderDomains() {
+            const tbody = document.getElementById('domainTableBody');
+            tbody.innerHTML = state.domains.map(d => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4 text-slate-500 font-medium">#${d.id}</td>
+                    <td class="px-6 py-4 font-bold text-slate-800">${d.title}</td>
+                    <td class="px-6 py-4">
+                        <input type="number" value="${d.priority || 0}" onchange="updateDomainPriority(${d.id}, this.value)" class="w-20 border border-slate-200 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-md ${d.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${d.is_active ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
+                            ${d.is_active ? 'Active' : 'Draft'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <button onclick="editDomain(${d.id})" class="text-slate-400 hover:text-blue-500 transition-colors p-2 rounded-lg hover:bg-blue-50"><i class="ph ph-pencil-simple text-lg"></i></button>
+                        <button onclick="deleteDomain(${d.id})" class="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50"><i class="ph ph-trash text-lg"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
         function renderParentCourses() {
             const tbody = document.getElementById('parentCourseTableBody');
             tbody.innerHTML = state.parentcourses.map(c => `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4 text-slate-500 font-medium">#${c.id}</td>
+                    <td class="px-6 py-4 text-slate-500 font-medium">${state.domains.find(d => d.id === c.domain)?.title || 'Unknown'}</td>
                     <td class="px-6 py-4 font-bold text-slate-800">${c.title}</td>
+                    <td class="px-6 py-4">
+                        <input type="number" value="${c.priority || 0}" onchange="updateParentCoursePriority(${c.id}, this.value)" class="w-20 border border-slate-200 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </td>
                     <td class="px-6 py-4">
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-md ${c.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
                             <span class="w-1.5 h-1.5 rounded-full ${c.is_active ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
@@ -743,7 +915,7 @@
             `).join('');
         }
 
-        function filterParentCourses() {
+        function filterParentCoursesLocally() {
             const query = document.getElementById('parentCourseSearch').value.toLowerCase();
             const filtered = state.parentcourses.filter(c => c.title.toLowerCase().includes(query) || c.id.toString().includes(query));
             // Reuse render logic by temporarily swapping the array or passing it? Actually renderParentCourses doesn't take args. 
@@ -752,7 +924,11 @@
             tbody.innerHTML = filtered.map(c => `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4 text-slate-500 font-medium">#${c.id}</td>
+                    <td class="px-6 py-4 text-slate-500 font-medium">${state.domains.find(d => d.id === c.domain)?.title || 'Unknown'}</td>
                     <td class="px-6 py-4 font-bold text-slate-800">${c.title}</td>
+                    <td class="px-6 py-4">
+                        <input type="number" value="${c.priority || 0}" onchange="updateParentCoursePriority(${c.id}, this.value)" class="w-20 border border-slate-200 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </td>
                     <td class="px-6 py-4">
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-md ${c.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
                             <span class="w-1.5 h-1.5 rounded-full ${c.is_active ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
@@ -775,7 +951,11 @@
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4 text-slate-500 font-medium">#${c.id}</td>
                     <td class="px-6 py-4 text-slate-500 font-medium">${parentName}</td>
+                    <td class="px-6 py-4 text-slate-500 font-medium">${state.domains.find(d => d.id === c.domain)?.title || 'Unknown'}</td>
                     <td class="px-6 py-4 font-bold text-slate-800">${c.title}</td>
+                    <td class="px-6 py-4">
+                        <input type="number" value="${c.priority || 0}" onchange="updateParentCoursePriority(${c.id}, this.value)" class="w-20 border border-slate-200 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </td>
                     <td class="px-6 py-4">
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-md ${c.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
                             <span class="w-1.5 h-1.5 rounded-full ${c.is_active ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
@@ -790,7 +970,7 @@
             `}).join('');
         }
 
-        function filterCourses() {
+        function filterCoursesLocally() {
             const query = document.getElementById('courseSearch').value.toLowerCase();
             const filtered = state.courses.filter(c => c.title.toLowerCase().includes(query) || c.id.toString().includes(query));
             renderCourses(filtered);
@@ -851,9 +1031,18 @@
         }
 
         // 7. Submit Handlers
+        async function submitDomain(e) {
+            e.preventDefault();
+            const payload = { title: document.getElementById('domainTitle').value, description: document.getElementById('domainDesc').value, is_active: document.getElementById('domainActive').checked };
+            const method = editMode ? 'PUT' : 'POST';
+            const endpoint = editMode ? `learning/admin/domains/${currentEditId}/` : 'learning/admin/domains/';
+            const res = await apiCall(endpoint, method, payload);
+            if (res) { showToast(editMode ? 'Domain updated!' : 'Domain added!'); closeModal('domainModal'); loadAllData(); }
+        }
+
         async function submitParentCourse(e) {
             e.preventDefault();
-            const payload = { title: document.getElementById('parentCourseTitle').value, description: document.getElementById('parentCourseDesc').value, is_active: document.getElementById('parentCourseActive').checked };
+            const payload = { domain: parseInt(document.getElementById('pcDomainId').value), title: document.getElementById('parentCourseTitle').value, description: document.getElementById('parentCourseDesc').value, is_active: document.getElementById('parentCourseActive').checked };
             const method = editMode ? 'PUT' : 'POST';
             const endpoint = editMode ? `learning/admin/courses/${currentEditId}/` : 'learning/admin/courses/';
             const res = await apiCall(endpoint, method, payload);
@@ -958,6 +1147,7 @@
 
 
         // 8. Delete Handlers
+        async function deleteDomain(id) { if (confirm('Delete this domain? It will delete ALL related courses.')) { await apiCall(`learning/admin/domains/${id}/`, 'DELETE'); loadAllData(); } }
         async function deleteParentCourse(id) { if (confirm('Delete this parent course? It will delete ALL related sub-courses, MCQs, and Flashcards.')) { await apiCall(`learning/admin/courses/${id}/`, 'DELETE'); loadAllData(); } }
         async function deleteCourse(id) { if (confirm('Delete this sub-course? It will delete related MCQs and Flashcards.')) { await apiCall(`learning/admin/subcourses/${id}/`, 'DELETE'); loadAllData(); } }
         async function deleteFlashcard(id) { if (confirm('Delete this flashcard?')) { await apiCall(`learning/admin/flashcards/${id}/`, 'DELETE'); loadAllData(); } }
