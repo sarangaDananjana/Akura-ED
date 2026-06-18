@@ -164,16 +164,30 @@ class AdminDomainViewSet(viewsets.ModelViewSet):
 
 class AdminCourseViewSet(viewsets.ModelViewSet):
     """CRUD operations for Courses in Custom Admin Panel."""
-    queryset = Course.objects.all()
+    queryset = Course.objects.all().order_by('priority')
     serializer_class = CourseSerializer
     permission_classes = [permissions.IsAdminUser]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        domain_id = self.request.query_params.get('domain_id')
+        if domain_id:
+            queryset = queryset.filter(domain_id=domain_id)
+        return queryset
 
 
 class AdminSubCourseViewSet(viewsets.ModelViewSet):
     """CRUD operations for SubCourses in Custom Admin Panel."""
-    queryset = SubCourse.objects.all()
+    queryset = SubCourse.objects.all().order_by('priority')
     serializer_class = SubCourseSerializer
     permission_classes = [permissions.IsAdminUser]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        course_id = self.request.query_params.get('course_id')
+        if course_id:
+            queryset = queryset.filter(course_id=course_id)
+        return queryset
 
 
 class AdminFlashcardViewSet(viewsets.ModelViewSet):
