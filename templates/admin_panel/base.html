@@ -276,6 +276,47 @@
             window.location.href = '/custom-admin/login/';
         });
 
+                function toggleSelectAll(masterCheckbox, type) {
+            const checkboxes = document.querySelectorAll(`.row-checkbox-${type}`);
+            checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+            updateBulkDeleteBtn(type);
+        }
+
+        function updateBulkDeleteBtn(type) {
+            const checkboxes = document.querySelectorAll(`.row-checkbox-${type}:checked`);
+            const btn = document.getElementById(`bulkDeleteBtn-${type}`);
+            if (btn) {
+                if (checkboxes.length > 0) {
+                    btn.classList.remove('hidden');
+                    btn.innerText = `Delete Selected (${checkboxes.length})`;
+                } else {
+                    btn.classList.add('hidden');
+                }
+            }
+        }
+
+        async function bulkDelete(type, baseUrl) {
+            const checkboxes = document.querySelectorAll(`.row-checkbox-${type}:checked`);
+            const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            if (ids.length === 0) return;
+            
+            if (!confirm(`Are you sure you want to delete ${ids.length} items? This cannot be undone.`)) return;
+
+            const btn = document.getElementById(`bulkDeleteBtn-${type}`);
+            const origText = btn.innerText;
+            btn.innerText = 'Deleting...';
+            btn.disabled = true;
+
+            const res = await apiCall(`${baseUrl}bulk_delete/`, 'DELETE', { ids: ids });
+            if (res) {
+                showToast(res.message || 'Items deleted successfully!');
+                setTimeout(() => location.reload(), 800);
+            } else {
+                btn.innerText = origText;
+                btn.disabled = false;
+            }
+        }
+
         // Set active nav button
         document.addEventListener('DOMContentLoaded', () => {
             const path = window.location.pathname;

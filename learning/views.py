@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from pymongo import MongoClient, UpdateOne
 from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -155,14 +156,25 @@ class SyncPullView(APIView):
 # --- Custom Admin Panel Views ---
 # All views here require the user to have an Admin account (is_staff=True)
 
-class AdminDomainViewSet(viewsets.ModelViewSet):
+class BulkDeleteMixin:
+    @action(detail=False, methods=['delete'])
+    def bulk_delete(self, request):
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({"error": "No IDs provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        queryset = self.get_queryset().filter(id__in=ids)
+        deleted_count, _ = queryset.delete()
+        return Response({"message": f"Successfully deleted {deleted_count} items."}, status=status.HTTP_200_OK)
+
+class AdminDomainViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
     """CRUD operations for Domains in Custom Admin Panel."""
     queryset = Domain.objects.all()
     serializer_class = DomainSerializer
     permission_classes = [permissions.IsAdminUser]
 
 
-class AdminCourseViewSet(viewsets.ModelViewSet):
+class AdminCourseViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
     """CRUD operations for Courses in Custom Admin Panel."""
     queryset = Course.objects.all().order_by('priority')
     serializer_class = CourseSerializer
@@ -176,7 +188,7 @@ class AdminCourseViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class AdminSubCourseViewSet(viewsets.ModelViewSet):
+class AdminSubCourseViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
     """CRUD operations for SubCourses in Custom Admin Panel."""
     queryset = SubCourse.objects.all().order_by('priority')
     serializer_class = SubCourseSerializer
@@ -190,14 +202,14 @@ class AdminSubCourseViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class AdminFlashcardViewSet(viewsets.ModelViewSet):
+class AdminFlashcardViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
     """CRUD operations for Flashcards. Allows uploading text, image, voice."""
     queryset = Flashcard.objects.all()
     serializer_class = FlashcardSerializer
     permission_classes = [permissions.IsAdminUser]
 
 
-class AdminMCQQuestionViewSet(viewsets.ModelViewSet):
+class AdminMCQQuestionViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
     """CRUD operations for MCQ Questions."""
     queryset = MCQQuestion.objects.all()
     serializer_class = MCQQuestionSerializer

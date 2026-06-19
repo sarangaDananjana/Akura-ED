@@ -14,6 +14,7 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold border-b border-slate-100">
+                                    <th class="px-6 py-4 w-12"><input type="checkbox" onchange="toggleSelectAll(this, 'domain')" class="w-4 h-4 text-indigo-600 rounded border-slate-300"></th>
                                     <th class="px-6 py-4">ID</th>
                                     <th class="px-6 py-4">Title</th>
                                     <th class="px-6 py-4 w-32">Priority</th>
@@ -135,6 +136,7 @@ function renderDomains() {
             const tbody = document.getElementById('domainTableBody');
             tbody.innerHTML = state.domains.map(d => `
                 <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4"><input type="checkbox" value="${d.id}" class="row-checkbox-domain w-4 h-4 text-indigo-600 rounded border-slate-300" onchange="updateBulkDeleteBtn(\'domain\')"></td>
                     <td class="px-6 py-4 text-slate-500 font-medium">#${d.id}</td>
                     <td class="px-6 py-4 font-bold text-slate-800">${d.title}</td>
                     <td class="px-6 py-4">
