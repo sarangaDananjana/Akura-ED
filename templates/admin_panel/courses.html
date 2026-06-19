@@ -157,7 +157,7 @@ async function fetchFilteredParentCourses() {
             let courseUrl = 'learning/admin/courses/';
             if (domainFilter && domainFilter !== 'all') { courseUrl += `?domain_id=${domainFilter}`; }
             const pData = await apiCall(courseUrl);
-            if (pData) { state.parentcourses = pData.results || pData; document.getElementById('stat-parentcourses').innerText = state.parentcourses.length; renderParentCourses(); populateParentCourseDropdowns(); }
+            if (pData) { state.parentcourses = pData.results || pData;  renderParentCourses(); populateParentCourseDropdowns(); }
         }
 
 async function updateParentCoursePriority(id, val) {

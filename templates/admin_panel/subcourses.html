@@ -161,7 +161,7 @@ async function fetchFilteredCourses() {
             let subUrl = 'learning/admin/subcourses/';
             if (subcourseFilter && subcourseFilter !== 'all') { subUrl += `?course_id=${subcourseFilter}`; }
             const cData = await apiCall(subUrl);
-            if (cData) { state.courses = cData.results || cData; document.getElementById('stat-courses').innerText = state.courses.length; renderCourses(state.courses); populateCourseDropdowns(); }
+            if (cData) { state.courses = cData.results || cData;  renderCourses(state.courses); populateCourseDropdowns(); }
         }
 
 async function updateCoursePriority(id, val) {
@@ -216,6 +216,7 @@ function populateCourseDropdowns() {
         }
 
 document.addEventListener('DOMContentLoaded', async () => {
+const dData = await apiCall('learning/admin/domains/'); if(dData) { state.domains = dData.results || dData; }
 const pData = await apiCall('learning/admin/courses/'); if(pData) { state.parentcourses = pData.results || pData; populateParentCourseDropdowns(); fetchFilteredCourses(); }
 });
 </script>
