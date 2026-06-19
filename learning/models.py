@@ -55,6 +55,7 @@ class Flashcard(models.Model):
         upload_to='flashcards/audio/', blank=True, null=True)
 
     # Answer fields
+    answer = models.TextField(blank=True, null=True)
     answer_text = models.TextField()
 
     # Premium check (e.g., first 50 are free, rest are premium)

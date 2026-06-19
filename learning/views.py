@@ -321,13 +321,22 @@ class AdminCSVUploadView(APIView):
                 for row_data in target_rows:
                     row_dict = dict(zip(headers, row_data))
                     q_text = row_dict.get('Question_Text', '').strip()
-                    ans_text = row_dict.get('Correct_Description', '').strip()
+                    ans_desc = row_dict.get('Correct_Description', '').strip()
+                    
+                    ans_text = ''
+                    # Find the option with 'correct' status
+                    for i in range(1, 6):
+                        opt_status = row_dict.get(f'Status_{i}', '').strip().lower()
+                        if opt_status == 'correct':
+                            ans_text = row_dict.get(f'Option_{i}', '').strip()
+                            break
 
                     if q_text and ans_text:
                         Flashcard.objects.create(
                             subcourse=subcourse,
                             question_text=q_text,
-                            answer_text=ans_text
+                            answer=ans_text,
+                            answer_text=ans_desc
                         )
                         created_count += 1
                         
