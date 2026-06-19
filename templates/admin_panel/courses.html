@@ -138,7 +138,7 @@ async function submitParentCourse(e) {
             const method = editMode ? 'PUT' : 'POST';
             const endpoint = editMode ? `learning/admin/courses/${currentEditId}/` : 'learning/admin/courses/';
             const res = await apiCall(endpoint, method, payload);
-            if (res) { showToast(editMode ? 'Parent Course updated successfully!' : 'Parent Course added successfully!'); closeModal('parentCourseModal'); loadAllData(); }
+            if (res) { showToast(editMode ? 'Parent Course updated successfully!' : 'Parent Course added successfully!'); closeModal('parentCourseModal'); location.reload(); }
         }
 
 function editParentCourse(id) {

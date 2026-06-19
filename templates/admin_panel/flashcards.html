@@ -176,7 +176,7 @@ async function submitFlashcard(e) {
             // For FormData with PUT, some backends (like Django REST framework) have issues unless you spoof it or use PATCH.
             // Let's use PATCH for edit mode just in case, or stick to PUT.
             const res = await apiCall(endpoint, editMode ? 'PATCH' : 'POST', formData);
-            if (res) { showToast(editMode ? 'Flashcard updated successfully!' : 'Flashcard saved successfully!'); closeModal('flashcardModal'); loadAllData(); }
+            if (res) { showToast(editMode ? 'Flashcard updated successfully!' : 'Flashcard saved successfully!'); closeModal('flashcardModal'); location.reload(); }
         }
 
 function editFlashcard(id) {

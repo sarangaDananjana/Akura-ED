@@ -142,7 +142,7 @@ async function submitCourse(e) {
             const method = editMode ? 'PUT' : 'POST';
             const endpoint = editMode ? `learning/admin/subcourses/${currentEditId}/` : 'learning/admin/subcourses/';
             const res = await apiCall(endpoint, method, payload);
-            if (res) { showToast(editMode ? 'Sub-Course updated successfully!' : 'Sub-Course added successfully!'); closeModal('courseModal'); loadAllData(); }
+            if (res) { showToast(editMode ? 'Sub-Course updated successfully!' : 'Sub-Course added successfully!'); closeModal('courseModal'); location.reload(); }
         }
 
 function editCourse(id) {

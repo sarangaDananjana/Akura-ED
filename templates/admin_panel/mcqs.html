@@ -39,6 +39,48 @@
                 </div>
             </div>
 
+            <!-- MCQ Modal -->
+            <div id="mcqModal"
+                class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+                <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-3xl transform scale-100 transition-transform max-h-[90vh] overflow-y-auto">
+                    <h3 class="text-2xl font-bold text-slate-900 mb-6" id="mcqModalTitle">New MCQ Question</h3>
+                    <form id="mcqForm" onsubmit="submitMCQ(event)">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Sub-Course</label>
+                                <select id="mcqCourseId" required
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none appearance-none"></select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Question Text</label>
+                                <textarea id="mcqQuestionText" required rows="3"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none"></textarea>
+                            </div>
+
+                            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h4 class="font-bold text-slate-800">Answer Options</h4>
+                                    <button type="button" onclick="addMCQOptionRow()"
+                                        class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
+                                        <i class="ph ph-plus"></i> Add Option
+                                    </button>
+                                </div>
+                                <p class="text-xs text-slate-500 mb-4">Select the radio button next to the correct answer(s).</p>
+                                <div id="mcqOptionsContainer" class="space-y-3">
+                                    <!-- Options injected here -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-3 mt-8">
+                            <button type="button" onclick="closeModal('mcqModal')"
+                                class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+                            <button type="submit" id="mcqSubmitBtn"
+                                class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition-all shadow-sm">Save Question & Options</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -127,7 +169,7 @@ async function submitMCQ(e) {
             const endpoint = editMode ? `learning/admin/mcqs/${currentEditId}/` : 'learning/admin/mcqs/';
             
             const res = await apiCall(endpoint, method, payload);
-            if (res) { showToast(editMode ? 'Question & Options updated!' : 'Question & Options added!'); closeModal('mcqModal'); loadAllData(); }
+            if (res) { showToast(editMode ? 'Question & Options updated!' : 'Question & Options added!'); closeModal('mcqModal'); location.reload(); }
         }
 
 function editMCQ(id) {

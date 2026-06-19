@@ -160,7 +160,7 @@ async function submitDomain(e) {
             const method = editMode ? 'PUT' : 'POST';
             const endpoint = editMode ? `learning/admin/domains/${currentEditId}/` : 'learning/admin/domains/';
             const res = await apiCall(endpoint, method, payload);
-            if (res) { showToast(editMode ? 'Domain updated!' : 'Domain added!'); closeModal('domainModal'); loadAllData(); }
+            if (res) { showToast(editMode ? 'Domain updated!' : 'Domain added!'); closeModal('domainModal'); location.reload(); }
         }
 
 function editDomain(id) {
@@ -176,7 +176,7 @@ function editDomain(id) {
 async function updateDomainPriority(id, val) {
             await apiCall(`learning/admin/domains/${id}/`, 'PATCH', { priority: parseInt(val) });
             showToast('Domain priority updated');
-            loadAllData();
+            location.reload();
         }
 
 function populateDomainDropdowns() {
