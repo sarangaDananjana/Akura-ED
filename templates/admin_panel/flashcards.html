@@ -1,0 +1,229 @@
+{% extends 'admin_panel/base.html' %}
+{% block content %}
+<div id="tab-flashcards" class="block">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">Flashcard Repository</h3>
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <i class="ph ph-funnel absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <select id="flashcardFilter" onchange="renderFlashcards()" class="pl-10 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-56 shadow-sm transition-all appearance-none cursor-pointer">
+                                <option value="all">All Sub-Courses</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="openCSVModal('flashcard')"
+                                class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-sm flex items-center gap-2"><i
+                                    class="ph ph-upload-simple text-lg"></i> Upload CSV</button>
+                            <button onclick="openModal('flashcardModal')"
+                                class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm flex items-center gap-2"><i
+                                    class="ph ph-plus-circle text-lg"></i> Add Flashcard</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold border-b border-slate-100">
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">Course</th>
+                                    <th class="px-6 py-4">Question</th>
+                                    <th class="px-6 py-4">Access</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="flashcardTableBody" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+<div id="flashcardModal"
+        class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-2xl">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6" id="flashcardModalTitle">Create Flashcard</h3>
+            <form id="flashcardForm" onsubmit="submitFlashcard(event)">
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Parent Sub-Course</label>
+                        <select id="fcCourseId" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none appearance-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Question Text</label>
+                        <textarea id="fcQuestion" required rows="2"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none resize-none"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Question Image (Optional)</label>
+                            <input type="file" id="fcQuestionImage" accept="image/*" class="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Question Audio (Optional)</label>
+                            <input type="file" id="fcQuestionVoice" accept="audio/*" class="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Answer (Correct Option)</label>
+                        <textarea id="fcShortAnswer" required rows="1"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Answer Description (Explanation)</label>
+                        <textarea id="fcAnswer" required rows="2"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none resize-none"></textarea>
+                    </div>
+                    <label
+                        class="flex items-center gap-3 p-4 border border-amber-100 bg-amber-50/50 rounded-xl cursor-pointer">
+                        <input type="checkbox" id="fcPremium"
+                            class="w-5 h-5 text-amber-500 border-amber-300 rounded focus:ring-amber-500">
+                        <div>
+                            <span class="block text-sm font-bold text-amber-900">Premium Only</span>
+                            <span class="block text-xs text-amber-700 mt-0.5">Restrict access to paid users</span>
+                        </div>
+                    </label>
+                </div>
+                <div class="flex justify-end gap-3 mt-8">
+                    <button type="button" onclick="closeModal('flashcardModal')"
+                        class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+                    <button type="submit" id="flashcardSubmitBtn"
+                        class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition-all shadow-sm">Save
+                        Flashcard</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+function openModal(modalId, isEdit = false) { 
+            editMode = isEdit;
+            document.getElementById(modalId).classList.remove('hidden'); 
+            
+            if (modalId === 'domainModal') {
+                document.getElementById('domainModalTitle').innerText = isEdit ? 'Edit Domain' : 'Add Domain';
+                document.getElementById('domainSubmitBtn').innerText = isEdit ? 'Update Domain' : 'Save Domain';
+            } else if (modalId === 'parentCourseModal') {
+                document.getElementById('parentCourseModalTitle').innerText = isEdit ? 'Edit Parent Course' : 'Add Parent Course';
+                document.getElementById('parentCourseSubmitBtn').innerText = isEdit ? 'Update Course' : 'Save Course';
+            } else if (modalId === 'courseModal') {
+                document.getElementById('courseModalTitle').innerText = isEdit ? 'Edit Sub-Course' : 'Add Sub-Course';
+                document.getElementById('courseSubmitBtn').innerText = isEdit ? 'Update Sub-Course' : 'Save Sub-Course';
+            } else if (modalId === 'flashcardModal') {
+                document.getElementById('flashcardModalTitle').innerText = isEdit ? 'Edit Flashcard' : 'Create Flashcard';
+                document.getElementById('flashcardSubmitBtn').innerText = isEdit ? 'Update Flashcard' : 'Save Flashcard';
+            } else if (modalId === 'mcqModal') {
+                document.getElementById('mcqModalTitle').innerText = isEdit ? 'Edit MCQ Question' : 'New MCQ Question';
+                document.getElementById('mcqSubmitBtn').innerText = isEdit ? 'Update Question & Options' : 'Save Question & Options';
+                if (!isEdit) {
+                    document.getElementById('mcqOptionsContainer').innerHTML = '';
+                    addMCQOptionRow('', true);
+                    addMCQOptionRow();
+                }
+            }
+        }
+
+function renderFlashcards() {
+            const tbody = document.getElementById('flashcardTableBody');
+            const filterCourseId = document.getElementById('flashcardFilter').value;
+            
+            const filtered = state.flashcards.filter(f => {
+                if (filterCourseId === 'all') return true;
+                return f.subcourse.toString() === filterCourseId;
+            });
+
+            tbody.innerHTML = filtered.map(f => {
+                const courseName = state.courses.find(c => c.id === f.subcourse)?.title || 'Unknown';
+                return `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4 text-slate-500 font-medium">#${f.id}</td>
+                    <td class="px-6 py-4 text-slate-500 font-medium">${courseName}</td>
+                    <td class="px-6 py-4 font-medium text-slate-800">${f.question_text.substring(0, 50)}...</td>
+                    <td class="px-6 py-4">
+                        ${f.is_premium_only
+                        ? '<span class="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md"><i class="ph-fill ph-star"></i> Premium</span>'
+                        : '<span class="inline-flex items-center text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">Free Plan</span>'}
+                    </td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <button onclick="editFlashcard(${f.id})" class="text-slate-400 hover:text-blue-500 transition-colors p-2 rounded-lg hover:bg-blue-50"><i class="ph ph-pencil-simple text-lg"></i></button>
+                        <button onclick="deleteFlashcard(${f.id})" class="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50"><i class="ph ph-trash text-lg"></i></button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+async function submitFlashcard(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('subcourse', document.getElementById('fcCourseId').value);
+            formData.append('question_text', document.getElementById('fcQuestion').value);
+            formData.append('answer', document.getElementById('fcShortAnswer').value);
+            formData.append('answer_text', document.getElementById('fcAnswer').value);
+            formData.append('is_premium_only', document.getElementById('fcPremium').checked);
+            
+            const qImage = document.getElementById('fcQuestionImage').files[0];
+            if (qImage) formData.append('question_image', qImage);
+            const qVoice = document.getElementById('fcQuestionVoice').files[0];
+            if (qVoice) formData.append('question_voice', qVoice);
+
+            const method = editMode ? 'PUT' : 'POST';
+            const endpoint = editMode ? `learning/admin/flashcards/${currentEditId}/` : 'learning/admin/flashcards/';
+            
+            // For FormData with PUT, some backends (like Django REST framework) have issues unless you spoof it or use PATCH.
+            // Let's use PATCH for edit mode just in case, or stick to PUT.
+            const res = await apiCall(endpoint, editMode ? 'PATCH' : 'POST', formData);
+            if (res) { showToast(editMode ? 'Flashcard updated successfully!' : 'Flashcard saved successfully!'); closeModal('flashcardModal'); loadAllData(); }
+        }
+
+function editFlashcard(id) {
+            const f = state.flashcards.find(x => x.id === id);
+            if(!f) return;
+            currentEditId = id;
+            document.getElementById('fcCourseId').value = f.subcourse;
+            document.getElementById('fcQuestion').value = f.question_text;
+            document.getElementById('fcShortAnswer').value = f.answer || '';
+            document.getElementById('fcQuestionImage').value = '';
+            document.getElementById('fcQuestionVoice').value = '';
+            document.getElementById('fcAnswer').value = f.answer_text;
+            document.getElementById('fcPremium').checked = f.is_premium_only;
+            openModal('flashcardModal', true);
+        }
+
+function populateCourseDropdowns() {
+            const fcCourseId = document.getElementById('fcCourseId');
+            const mcqCourseId = document.getElementById('mcqCourseId');
+            const csvCourseId = document.getElementById('csvCourseId');
+            const flashcardFilter = document.getElementById('flashcardFilter');
+            const mcqFilter = document.getElementById('mcqFilter');
+
+            const valFc = fcCourseId ? fcCourseId.value : '';
+            const valMcq = mcqCourseId ? mcqCourseId.value : '';
+            const valCsv = csvCourseId ? csvCourseId.value : '';
+            const valFcFilter = flashcardFilter ? flashcardFilter.value : 'all';
+            const valMcqFilter = mcqFilter ? mcqFilter.value : 'all';
+
+            const options = state.courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+            const filterOptions = '<option value="all">All Sub-Courses</option>' + options;
+            
+            if(fcCourseId) fcCourseId.innerHTML = options;
+            if(mcqCourseId) mcqCourseId.innerHTML = options;
+            if(csvCourseId) csvCourseId.innerHTML = options;
+            if(flashcardFilter) flashcardFilter.innerHTML = filterOptions;
+            if(mcqFilter) mcqFilter.innerHTML = filterOptions;
+
+            if(fcCourseId && valFc) fcCourseId.value = valFc;
+            if(mcqCourseId && valMcq) mcqCourseId.value = valMcq;
+            if(csvCourseId && valCsv) csvCourseId.value = valCsv;
+            if(flashcardFilter && valFcFilter) flashcardFilter.value = valFcFilter;
+            if(mcqFilter && valMcqFilter) mcqFilter.value = valMcqFilter;
+        }
+
+document.addEventListener('DOMContentLoaded', async () => {
+const cData = await apiCall('learning/admin/subcourses/'); if(cData) { state.courses = cData.results || cData; populateCourseDropdowns(); } const fData = await apiCall('learning/admin/flashcards/'); if(fData){ state.flashcards = fData.results || fData; renderFlashcards(); }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akura Admin - Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Premium Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Phosphor Icons (Sleeker than FontAwesome) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Custom Scrollbar for a premium feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body
+    class="bg-slate-50 flex h-screen overflow-hidden font-sans antialiased text-slate-800 selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Sidebar -->
+    <aside class="w-72 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-20">
+        <div class="p-6 flex items-center gap-4">
+            <div class="w-10 h-10 bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-center p-1">
+                <img src="/media/images/Logo - 123.png" alt="Logo" class="w-full h-full object-cover rounded-lg mix-blend-multiply">
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-white tracking-tight leading-tight">Akura Admin</h1>
+                <p class="text-xs text-slate-400 font-medium">Master Workspace</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-4 py-4">
+            <ul class="space-y-1.5" id="navMenu">
+                <li><button onclick="window.location.href='{% url \'custom-admin-dashboard\' %}'"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all text-white bg-indigo-600 shadow-md shadow-indigo-900/20"><i
+                            class="ph ph-squares-four text-xl"></i> <span
+                            class="font-semibold text-sm">Dashboard</span></button></li>
+
+                <div class="pt-4 pb-1">
+                    <p class="px-4 text-xs font-bold tracking-wider text-slate-500 uppercase">Learning Engine</p>
+                </div>
+
+                <li><button onclick="window.location.href='{% url \'custom-admin-domains\' %}'"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-slate-800 hover:text-white"><i
+                            class="ph ph-globe text-xl"></i> <span
+                            class="font-medium text-sm">Domains</span></button></li>
+                <li><button onclick="window.location.href='{% url \'custom-admin-courses\' %}'"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-slate-800 hover:text-white"><i
+                            class="ph ph-folder text-xl"></i> <span
+                            class="font-medium text-sm">Courses (Parent)</span></button></li>
+                <li><button onclick="window.location.href='{% url \'custom-admin-subcourses\' %}'"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-slate-800 hover:text-white"><i
+                            class="ph ph-books text-xl"></i> <span
+                            class="font-medium text-sm">Sub-Courses</span></button></li>
+                <li><button onclick="window.location.href='{% url \'custom-admin-flashcards\' %}'"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-slate-800 hover:text-white"><i
+                            class="ph ph-cards text-xl"></i> <span
+                            class="font-medium text-sm">Flashcards</span></button></li>
+                <li><button onclick="window.location.href='{% url \'custom-admin-mcqs\' %}'"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-slate-800 hover:text-white"><i
+                            class="ph ph-list-checks text-xl"></i> <span
+                            class="font-medium text-sm">MCQs</span></button></li>
+
+                <div class="pt-4 pb-1">
+                    <p class="px-4 text-xs font-bold tracking-wider text-slate-500 uppercase">Administration</p>
+                </div>
+
+                <li><button onclick="window.location.href='{% url \'custom-admin-users\' %}'"
+                        class="nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-slate-800 hover:text-white"><i
+                            class="ph ph-users text-xl"></i> <span class="font-medium text-sm">Users</span></button>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="p-4">
+            <button id="logoutBtn"
+                class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-red-500 hover:text-white text-slate-300 py-3 rounded-xl transition-all text-sm font-semibold">
+                <i class="ph ph-sign-out text-lg"></i> Sign Out
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto relative">
+        <!-- Top Header -->
+        <header
+            class="bg-white/80 backdrop-blur-md sticky top-0 z-10 px-8 py-5 flex justify-between items-center border-b border-slate-200/60">
+            <h2 id="pageTitle" class="text-2xl font-bold text-slate-900 tracking-tight">Dashboard Overview</h2>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden md:block">
+                    <p class="text-sm font-bold text-slate-900">Administrator</p>
+                    <p class="text-xs text-slate-500">admin@akura.edu</p>
+                </div>
+                <div
+                    class="w-10 h-10 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold">
+                    A
+                </div>
+            </div>
+        </header>
+
+        <div class="p-8 max-w-7xl mx-auto w-full">
+            <!-- Toast Notification -->
+            <div id="toast" class="hidden fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl z-50 transition-all transform flex items-center gap-3 font-medium text-sm border"></div>
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+
+    {% block scripts %}
+    <script>
+        const token = localStorage.getItem('adminToken');
+        if (!token) window.location.href = '/custom-admin/login/';
+        
+        let state = { domains: [], parentcourses: [], courses: [], flashcards: [], mcqs: [], users: [] };
+        let editMode = false;
+        let currentEditId = null;
+
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const options = { method, headers: { 'Authorization': `Bearer ${token}` } };
+            if (body) {
+                if (body instanceof FormData) {
+                    options.body = body;
+                } else {
+                    options.headers['Content-Type'] = 'application/json';
+                    options.body = JSON.stringify(body);
+                }
+            }
+            try {
+                const res = await fetch(`/api/${endpoint}`, options);
+                if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/custom-admin/login/'; }
+                if (!res.ok) throw new Error('API Error');
+                if (method !== 'DELETE') return await res.json();
+                return true;
+            } catch (err) {
+                showToast('Action failed. Please try again.', 'error');
+                console.error(err);
+                return null;
+            }
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = type === 'success' ? '<i class="ph-fill ph-check-circle text-2xl"></i>' : '<i class="ph-fill ph-warning-circle text-2xl"></i>';
+            const colors = type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-emerald-900/5' : 'bg-red-50 text-red-800 border-red-200 shadow-red-900/5';
+            toast.innerHTML = `${icon} <span>${msg}</span>`;
+            toast.className = `fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-xl z-50 transition-all transform flex items-center gap-3 font-semibold text-sm border ${colors}`;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            const form = document.querySelector(`#${modalId} form`);
+            if (form) form.reset();
+            editMode = false;
+            currentEditId = null;
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('adminToken');
+            window.location.href = '/custom-admin/login/';
+        });
+
+        // Set active nav button
+        document.addEventListener('DOMContentLoaded', () => {
+            const path = window.location.pathname;
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(path.split('/')[2])) {
+                    btn.className = "nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all text-white bg-indigo-600 shadow-md shadow-indigo-900/20";
+                }
+            });
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>

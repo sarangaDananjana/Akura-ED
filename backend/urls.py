@@ -35,6 +35,18 @@ urlpatterns = [
         template_name='admin_panel/login.html'), name='custom-admin-login'),
     path('custom-admin/dashboard/', TemplateView.as_view(
         template_name='admin_panel/dashboard.html'), name='custom-admin-dashboard'),
+    path('custom-admin/domains/', TemplateView.as_view(
+        template_name='admin_panel/domains.html'), name='custom-admin-domains'),
+    path('custom-admin/courses/', TemplateView.as_view(
+        template_name='admin_panel/courses.html'), name='custom-admin-courses'),
+    path('custom-admin/subcourses/', TemplateView.as_view(
+        template_name='admin_panel/subcourses.html'), name='custom-admin-subcourses'),
+    path('custom-admin/flashcards/', TemplateView.as_view(
+        template_name='admin_panel/flashcards.html'), name='custom-admin-flashcards'),
+    path('custom-admin/mcqs/', TemplateView.as_view(
+        template_name='admin_panel/mcqs.html'), name='custom-admin-mcqs'),
+    path('custom-admin/users/', TemplateView.as_view(
+        template_name='admin_panel/users.html'), name='custom-admin-users'),
 
 ]
 

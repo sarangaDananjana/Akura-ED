@@ -1,0 +1,205 @@
+{% extends 'admin_panel/base.html' %}
+{% block content %}
+<div id="tab-parentcourses" class="block">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">Master Courses</h3>
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <i class="ph ph-funnel absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <select id="courseDomainFilter" onchange="fetchFilteredParentCourses()" class="pl-10 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-48 shadow-sm transition-all appearance-none cursor-pointer">
+                                <option value="all">All Domains</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="parentCourseSearch" onkeyup="filterParentCoursesLocally()" placeholder="Search courses..." class="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-48 shadow-sm transition-all">
+                        </div>
+                        <button onclick="openModal('parentCourseModal')"
+                            class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm flex items-center gap-2"><i
+                                class="ph ph-plus-circle text-lg"></i> Add Course</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold border-b border-slate-100">
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">Domain</th>
+                                    <th class="px-6 py-4">Title</th>
+                                    <th class="px-6 py-4 w-32">Priority</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="parentCourseTableBody" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+<div id="parentCourseModal"
+        class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-2xl transform scale-100 transition-transform">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6" id="parentCourseModalTitle">Add Parent Course</h3>
+            <form id="parentCourseForm" onsubmit="submitParentCourse(event)">
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Domain</label>
+                        <select id="pcDomainId" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none appearance-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Course Title</label>
+                        <input type="text" id="parentCourseTitle" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+                        <textarea id="parentCourseDesc" rows="3"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none"></textarea>
+                    </div>
+                    <label
+                        class="flex items-center gap-3 p-4 border border-slate-100 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                        <input type="checkbox" id="parentCourseActive"
+                            class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300" checked>
+                        <span class="text-sm font-semibold text-slate-700">Course is Active</span>
+                    </label>
+                </div>
+                <div class="flex justify-end gap-3 mt-8">
+                    <button type="button" onclick="closeModal('parentCourseModal')"
+                        class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+                    <button type="submit" id="parentCourseSubmitBtn"
+                        class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition-all shadow-sm">Save Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+function openModal(modalId, isEdit = false) { 
+            editMode = isEdit;
+            document.getElementById(modalId).classList.remove('hidden'); 
+            
+            if (modalId === 'domainModal') {
+                document.getElementById('domainModalTitle').innerText = isEdit ? 'Edit Domain' : 'Add Domain';
+                document.getElementById('domainSubmitBtn').innerText = isEdit ? 'Update Domain' : 'Save Domain';
+            } else if (modalId === 'parentCourseModal') {
+                document.getElementById('parentCourseModalTitle').innerText = isEdit ? 'Edit Parent Course' : 'Add Parent Course';
+                document.getElementById('parentCourseSubmitBtn').innerText = isEdit ? 'Update Course' : 'Save Course';
+            } else if (modalId === 'courseModal') {
+                document.getElementById('courseModalTitle').innerText = isEdit ? 'Edit Sub-Course' : 'Add Sub-Course';
+                document.getElementById('courseSubmitBtn').innerText = isEdit ? 'Update Sub-Course' : 'Save Sub-Course';
+            } else if (modalId === 'flashcardModal') {
+                document.getElementById('flashcardModalTitle').innerText = isEdit ? 'Edit Flashcard' : 'Create Flashcard';
+                document.getElementById('flashcardSubmitBtn').innerText = isEdit ? 'Update Flashcard' : 'Save Flashcard';
+            } else if (modalId === 'mcqModal') {
+                document.getElementById('mcqModalTitle').innerText = isEdit ? 'Edit MCQ Question' : 'New MCQ Question';
+                document.getElementById('mcqSubmitBtn').innerText = isEdit ? 'Update Question & Options' : 'Save Question & Options';
+                if (!isEdit) {
+                    document.getElementById('mcqOptionsContainer').innerHTML = '';
+                    addMCQOptionRow('', true);
+                    addMCQOptionRow();
+                }
+            }
+        }
+
+function renderParentCourses() {
+            const tbody = document.getElementById('parentCourseTableBody');
+            tbody.innerHTML = state.parentcourses.map(c => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4 text-slate-500 font-medium">#${c.id}</td>
+                    <td class="px-6 py-4 text-slate-500 font-medium">${state.domains.find(d => d.id === c.domain)?.title || 'Unknown'}</td>
+                    <td class="px-6 py-4 font-bold text-slate-800">${c.title}</td>
+                    <td class="px-6 py-4">
+                        <input type="number" value="${c.priority || 0}" onchange="updateParentCoursePriority(${c.id}, this.value)" class="w-20 border border-slate-200 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-md ${c.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${c.is_active ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
+                            ${c.is_active ? 'Active' : 'Draft'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <button onclick="editParentCourse(${c.id})" class="text-slate-400 hover:text-blue-500 transition-colors p-2 rounded-lg hover:bg-blue-50"><i class="ph ph-pencil-simple text-lg"></i></button>
+                        <button onclick="deleteParentCourse(${c.id})" class="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50"><i class="ph ph-trash text-lg"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+async function submitParentCourse(e) {
+            e.preventDefault();
+            const payload = { domain: parseInt(document.getElementById('pcDomainId').value), title: document.getElementById('parentCourseTitle').value, description: document.getElementById('parentCourseDesc').value, is_active: document.getElementById('parentCourseActive').checked };
+            const method = editMode ? 'PUT' : 'POST';
+            const endpoint = editMode ? `learning/admin/courses/${currentEditId}/` : 'learning/admin/courses/';
+            const res = await apiCall(endpoint, method, payload);
+            if (res) { showToast(editMode ? 'Parent Course updated successfully!' : 'Parent Course added successfully!'); closeModal('parentCourseModal'); loadAllData(); }
+        }
+
+function editParentCourse(id) {
+            const c = state.parentcourses.find(x => x.id === id);
+            if(!c) return;
+            currentEditId = id;
+            document.getElementById('pcDomainId').value = c.domain;
+            document.getElementById('parentCourseTitle').value = c.title;
+            document.getElementById('parentCourseDesc').value = c.description;
+            document.getElementById('parentCourseActive').checked = c.is_active;
+            openModal('parentCourseModal', true);
+        }
+
+async function fetchFilteredParentCourses() {
+            const domainFilter = document.getElementById('courseDomainFilter')?.value;
+            let courseUrl = 'learning/admin/courses/';
+            if (domainFilter && domainFilter !== 'all') { courseUrl += `?domain_id=${domainFilter}`; }
+            const pData = await apiCall(courseUrl);
+            if (pData) { state.parentcourses = pData.results || pData; document.getElementById('stat-parentcourses').innerText = state.parentcourses.length; renderParentCourses(); populateParentCourseDropdowns(); }
+        }
+
+async function updateParentCoursePriority(id, val) {
+            await apiCall(`learning/admin/courses/${id}/`, 'PATCH', { priority: parseInt(val) });
+            showToast('Course priority updated');
+            fetchFilteredParentCourses();
+        }
+
+function populateDomainDropdowns() {
+            const domainFilter = document.getElementById('courseDomainFilter');
+            const pcDomainId = document.getElementById('pcDomainId');
+            const currentFilterVal = domainFilter ? domainFilter.value : 'all';
+            const currentPcVal = pcDomainId ? pcDomainId.value : '';
+
+            const options = state.domains.map(d => `<option value="${d.id}">${d.title}</option>`).join('');
+            const filterOptions = '<option value="all">All Domains</option>' + options;
+            
+            if(pcDomainId) pcDomainId.innerHTML = options;
+            if(domainFilter) domainFilter.innerHTML = filterOptions;
+
+            if(pcDomainId && currentPcVal) pcDomainId.value = currentPcVal;
+            if(domainFilter && currentFilterVal) domainFilter.value = currentFilterVal;
+        }
+
+function populateParentCourseDropdowns() {
+            const parentId = document.getElementById('subcourseParentId');
+            const courseFilter = document.getElementById('subcourseCourseFilter');
+            const currentParentIdVal = parentId ? parentId.value : '';
+            const currentFilterVal = courseFilter ? courseFilter.value : 'all';
+
+            const options = state.parentcourses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+            const filterOptions = '<option value="all">All Parent Courses</option>' + options;
+            
+            if(parentId) parentId.innerHTML = options;
+            if(courseFilter) courseFilter.innerHTML = filterOptions;
+
+            if(parentId && currentParentIdVal) parentId.value = currentParentIdVal;
+            if(courseFilter && currentFilterVal) courseFilter.value = currentFilterVal;
+        }
+
+document.addEventListener('DOMContentLoaded', async () => {
+const dData = await apiCall('learning/admin/domains/'); if(dData) { state.domains = dData.results || dData; populateDomainDropdowns(); fetchFilteredParentCourses(); }
+});
+</script>
+{% endblock %}

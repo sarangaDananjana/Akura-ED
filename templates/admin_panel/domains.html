@@ -1,0 +1,202 @@
+{% extends 'admin_panel/base.html' %}
+{% block content %}
+<div id="tab-domains" class="block">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">Domains</h3>
+                    <div class="flex items-center gap-4">
+                        <button onclick="openModal('domainModal')"
+                            class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm flex items-center gap-2"><i
+                                class="ph ph-plus-circle text-lg"></i> Add Domain</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold border-b border-slate-100">
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">Title</th>
+                                    <th class="px-6 py-4 w-32">Priority</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="domainTableBody" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+<div id="domainModal"
+        class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-2xl transform scale-100 transition-transform">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6" id="domainModalTitle">Add Domain</h3>
+            <form id="domainForm" onsubmit="submitDomain(event)">
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Domain Title</label>
+                        <input type="text" id="domainTitle" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+                        <textarea id="domainDesc" rows="3"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none"></textarea>
+                    </div>
+                    <label
+                        class="flex items-center gap-3 p-4 border border-slate-100 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                        <input type="checkbox" id="domainActive"
+                            class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300" checked>
+                        <span class="text-sm font-semibold text-slate-700">Domain is Active</span>
+                    </label>
+                </div>
+                <div class="flex justify-end gap-3 mt-8">
+                    <button type="button" onclick="closeModal('domainModal')"
+                        class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+                    <button type="submit" id="domainSubmitBtn"
+                        class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition-all shadow-sm">Save Domain</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Parent Course Modal -->
+    <div id="parentCourseModal"
+        class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-2xl transform scale-100 transition-transform">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6" id="parentCourseModalTitle">Add Parent Course</h3>
+            <form id="parentCourseForm" onsubmit="submitParentCourse(event)">
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Domain</label>
+                        <select id="pcDomainId" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none appearance-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Course Title</label>
+                        <input type="text" id="parentCourseTitle" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+                        <textarea id="parentCourseDesc" rows="3"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none"></textarea>
+                    </div>
+                    <label
+                        class="flex items-center gap-3 p-4 border border-slate-100 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                        <input type="checkbox" id="parentCourseActive"
+                            class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300" checked>
+                        <span class="text-sm font-semibold text-slate-700">Course is Active</span>
+                    </label>
+                </div>
+                <div class="flex justify-end gap-3 mt-8">
+                    <button type="button" onclick="closeModal('parentCourseModal')"
+                        class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+                    <button type="submit" id="parentCourseSubmitBtn"
+                        class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition-all shadow-sm">Save Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+function openModal(modalId, isEdit = false) { 
+            editMode = isEdit;
+            document.getElementById(modalId).classList.remove('hidden'); 
+            
+            if (modalId === 'domainModal') {
+                document.getElementById('domainModalTitle').innerText = isEdit ? 'Edit Domain' : 'Add Domain';
+                document.getElementById('domainSubmitBtn').innerText = isEdit ? 'Update Domain' : 'Save Domain';
+            } else if (modalId === 'parentCourseModal') {
+                document.getElementById('parentCourseModalTitle').innerText = isEdit ? 'Edit Parent Course' : 'Add Parent Course';
+                document.getElementById('parentCourseSubmitBtn').innerText = isEdit ? 'Update Course' : 'Save Course';
+            } else if (modalId === 'courseModal') {
+                document.getElementById('courseModalTitle').innerText = isEdit ? 'Edit Sub-Course' : 'Add Sub-Course';
+                document.getElementById('courseSubmitBtn').innerText = isEdit ? 'Update Sub-Course' : 'Save Sub-Course';
+            } else if (modalId === 'flashcardModal') {
+                document.getElementById('flashcardModalTitle').innerText = isEdit ? 'Edit Flashcard' : 'Create Flashcard';
+                document.getElementById('flashcardSubmitBtn').innerText = isEdit ? 'Update Flashcard' : 'Save Flashcard';
+            } else if (modalId === 'mcqModal') {
+                document.getElementById('mcqModalTitle').innerText = isEdit ? 'Edit MCQ Question' : 'New MCQ Question';
+                document.getElementById('mcqSubmitBtn').innerText = isEdit ? 'Update Question & Options' : 'Save Question & Options';
+                if (!isEdit) {
+                    document.getElementById('mcqOptionsContainer').innerHTML = '';
+                    addMCQOptionRow('', true);
+                    addMCQOptionRow();
+                }
+            }
+        }
+
+function renderDomains() {
+            const tbody = document.getElementById('domainTableBody');
+            tbody.innerHTML = state.domains.map(d => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4 text-slate-500 font-medium">#${d.id}</td>
+                    <td class="px-6 py-4 font-bold text-slate-800">${d.title}</td>
+                    <td class="px-6 py-4">
+                        <input type="number" value="${d.priority || 0}" onchange="updateDomainPriority(${d.id}, this.value)" class="w-20 border border-slate-200 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-md ${d.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
+                            <span class="w-1.5 h-1.5 rounded-full ${d.is_active ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
+                            ${d.is_active ? 'Active' : 'Draft'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <button onclick="editDomain(${d.id})" class="text-slate-400 hover:text-blue-500 transition-colors p-2 rounded-lg hover:bg-blue-50"><i class="ph ph-pencil-simple text-lg"></i></button>
+                        <button onclick="deleteDomain(${d.id})" class="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50"><i class="ph ph-trash text-lg"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+async function submitDomain(e) {
+            e.preventDefault();
+            const payload = { title: document.getElementById('domainTitle').value, description: document.getElementById('domainDesc').value, is_active: document.getElementById('domainActive').checked };
+            const method = editMode ? 'PUT' : 'POST';
+            const endpoint = editMode ? `learning/admin/domains/${currentEditId}/` : 'learning/admin/domains/';
+            const res = await apiCall(endpoint, method, payload);
+            if (res) { showToast(editMode ? 'Domain updated!' : 'Domain added!'); closeModal('domainModal'); loadAllData(); }
+        }
+
+function editDomain(id) {
+            const d = state.domains.find(x => x.id === id);
+            if(!d) return;
+            currentEditId = id;
+            document.getElementById('domainTitle').value = d.title;
+            document.getElementById('domainDesc').value = d.description;
+            document.getElementById('domainActive').checked = d.is_active;
+            openModal('domainModal', true);
+        }
+
+async function updateDomainPriority(id, val) {
+            await apiCall(`learning/admin/domains/${id}/`, 'PATCH', { priority: parseInt(val) });
+            showToast('Domain priority updated');
+            loadAllData();
+        }
+
+function populateDomainDropdowns() {
+            const domainFilter = document.getElementById('courseDomainFilter');
+            const pcDomainId = document.getElementById('pcDomainId');
+            const currentFilterVal = domainFilter ? domainFilter.value : 'all';
+            const currentPcVal = pcDomainId ? pcDomainId.value : '';
+
+            const options = state.domains.map(d => `<option value="${d.id}">${d.title}</option>`).join('');
+            const filterOptions = '<option value="all">All Domains</option>' + options;
+            
+            if(pcDomainId) pcDomainId.innerHTML = options;
+            if(domainFilter) domainFilter.innerHTML = filterOptions;
+
+            if(pcDomainId && currentPcVal) pcDomainId.value = currentPcVal;
+            if(domainFilter && currentFilterVal) domainFilter.value = currentFilterVal;
+        }
+
+document.addEventListener('DOMContentLoaded', async () => {
+const dData = await apiCall('learning/admin/domains/'); if(dData){ state.domains = dData.results || dData; renderDomains(); }
+});
+</script>
+{% endblock %}
