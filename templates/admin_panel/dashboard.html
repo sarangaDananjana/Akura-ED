@@ -515,6 +515,16 @@
                         <textarea id="fcQuestion" required rows="2"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none resize-none"></textarea>
                     </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Question Image (Optional)</label>
+                            <input type="file" id="fcQuestionImage" accept="image/*" class="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Question Audio (Optional)</label>
+                            <input type="file" id="fcQuestionVoice" accept="audio/*" class="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                        </div>
+                    </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Answer (Correct Option)</label>
                         <textarea id="fcShortAnswer" required rows="1"
@@ -642,8 +652,15 @@
 
         // 3. Setup Fetch API Wrapper
         async function apiCall(endpoint, method = 'GET', body = null) {
-            const options = { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } };
-            if (body) options.body = JSON.stringify(body);
+            const options = { method, headers: { 'Authorization': `Bearer ${token}` } };
+            if (body) {
+                if (body instanceof FormData) {
+                    options.body = body;
+                } else {
+                    options.headers['Content-Type'] = 'application/json';
+                    options.body = JSON.stringify(body);
+                }
+            }
             try {
                 const res = await fetch(`/api/${endpoint}`, options);
                 if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/custom-admin/login/'; }
@@ -835,6 +852,8 @@
             document.getElementById('fcCourseId').value = f.subcourse;
             document.getElementById('fcQuestion').value = f.question_text;
             document.getElementById('fcShortAnswer').value = f.answer || '';
+            document.getElementById('fcQuestionImage').value = '';
+            document.getElementById('fcQuestionVoice').value = '';
             document.getElementById('fcAnswer').value = f.answer_text;
             document.getElementById('fcPremium').checked = f.is_premium_only;
             openModal('flashcardModal', true);
@@ -1115,10 +1134,24 @@
 
         async function submitFlashcard(e) {
             e.preventDefault();
-            const payload = { subcourse: parseInt(document.getElementById('fcCourseId').value), question_text: document.getElementById('fcQuestion').value, answer: document.getElementById('fcShortAnswer').value, answer_text: document.getElementById('fcAnswer').value, is_premium_only: document.getElementById('fcPremium').checked };
+            const formData = new FormData();
+            formData.append('subcourse', document.getElementById('fcCourseId').value);
+            formData.append('question_text', document.getElementById('fcQuestion').value);
+            formData.append('answer', document.getElementById('fcShortAnswer').value);
+            formData.append('answer_text', document.getElementById('fcAnswer').value);
+            formData.append('is_premium_only', document.getElementById('fcPremium').checked);
+            
+            const qImage = document.getElementById('fcQuestionImage').files[0];
+            if (qImage) formData.append('question_image', qImage);
+            const qVoice = document.getElementById('fcQuestionVoice').files[0];
+            if (qVoice) formData.append('question_voice', qVoice);
+
             const method = editMode ? 'PUT' : 'POST';
             const endpoint = editMode ? `learning/admin/flashcards/${currentEditId}/` : 'learning/admin/flashcards/';
-            const res = await apiCall(endpoint, method, payload);
+            
+            // For FormData with PUT, some backends (like Django REST framework) have issues unless you spoof it or use PATCH.
+            // Let's use PATCH for edit mode just in case, or stick to PUT.
+            const res = await apiCall(endpoint, editMode ? 'PATCH' : 'POST', formData);
             if (res) { showToast(editMode ? 'Flashcard updated successfully!' : 'Flashcard saved successfully!'); closeModal('flashcardModal'); loadAllData(); }
         }
 

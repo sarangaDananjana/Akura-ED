@@ -296,12 +296,12 @@ class AdminCSVUploadView(APIView):
             # Find the header row (assuming it contains 'Question_ID' or 'Question_Text')
             header_idx = -1
             for idx, row in enumerate(rows):
-                if row and any(cell.strip().lower() == 'question_id' for cell in row):
+                if row and any(cell.strip().lower() in ['question_id', 'question_text'] for cell in row):
                     header_idx = idx
                     break
             
             if header_idx == -1:
-                return Response({"error": "Could not find header row containing 'Question_ID'."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Could not find header row containing 'Question_ID' or 'Question_Text'."}, status=status.HTTP_400_BAD_REQUEST)
 
             headers = [h.strip() for h in rows[header_idx]]
             data_rows = rows[header_idx + 1:]
@@ -321,15 +321,18 @@ class AdminCSVUploadView(APIView):
                 for row_data in target_rows:
                     row_dict = dict(zip(headers, row_data))
                     q_text = row_dict.get('Question_Text', '').strip()
-                    ans_desc = row_dict.get('Correct_Description', '').strip()
+                    ans_desc = row_dict.get('Answer_Text', '').strip()
+                    if not ans_desc:
+                        ans_desc = row_dict.get('Correct_Description', '').strip()
                     
-                    ans_text = ''
-                    # Find the option with 'correct' status
-                    for i in range(1, 6):
-                        opt_status = row_dict.get(f'Status_{i}', '').strip().lower()
-                        if opt_status == 'correct':
-                            ans_text = row_dict.get(f'Option_{i}', '').strip()
-                            break
+                    ans_text = row_dict.get('Answer', '').strip()
+                    if not ans_text:
+                        # Find the option with 'correct' status
+                        for i in range(1, 6):
+                            opt_status = row_dict.get(f'Status_{i}', '').strip().lower()
+                            if opt_status == 'correct':
+                                ans_text = row_dict.get(f'Option_{i}', '').strip()
+                                break
 
                     if q_text and ans_text:
                         Flashcard.objects.create(
