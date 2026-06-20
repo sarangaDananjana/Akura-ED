@@ -255,11 +255,8 @@ class ReadOnlySubCourseViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        # Allow if subcourse is free OR user has enrolled in parent course OR user enrolled directly
-        queryset = SubCourse.objects.filter(is_active=True).filter(
-            Q(is_free=True) | Q(course__enrollments__user=user) | Q(enrollments__user=user)
-        ).distinct().order_by('priority')
+        # Return all active subcourses so the app can display the curriculum for unpurchased courses
+        queryset = SubCourse.objects.filter(is_active=True).order_by('priority')
         
         course_id = self.request.query_params.get('course_id')
         if course_id:
