@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from users.models import CustomUser
 
 
 class Domain(models.Model):
@@ -19,6 +20,7 @@ class Course(models.Model):
     domain = models.ForeignKey(Domain, related_name='courses', on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255,default="none")
     description = models.TextField(blank=True, default="none")
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Price of the course.")
     is_active = models.BooleanField(default=True)
     priority = models.IntegerField(default=0, help_text="Priority for ordering. Lower numbers appear first.")
 
@@ -33,6 +35,7 @@ class SubCourse(models.Model):
     course = models.ForeignKey(Course, related_name='subcourses', on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    is_free = models.BooleanField(default=False, help_text="If True, this sub-course is free even if the parent course is paid.")
     is_active = models.BooleanField(default=True)
     priority = models.IntegerField(default=0, help_text="Priority for ordering. Lower numbers appear first.")
 
@@ -88,3 +91,19 @@ class MCQOption(models.Model):
 
     def __str__(self):
         return f"Option for {self.question.id}"
+
+class Enrollment(models.Model):
+    """Tracks which user is enrolled in which course or sub-course."""
+    user = models.ForeignKey(CustomUser, related_name='enrollments', on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, related_name='enrollments', on_delete=models.CASCADE, null=True, blank=True)
+    subcourse = models.ForeignKey(SubCourse, related_name='enrollments', on_delete=models.CASCADE, null=True, blank=True)
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    class Meta:
+        # User shouldn't be enrolled multiple times in the exact same configuration
+        unique_together = ('user', 'course', 'subcourse')
+
+    def __str__(self):
+        target = self.course.title if self.course else (self.subcourse.title if self.subcourse else "Unknown")
+        return f"{self.user.username} enrolled in {target}"

@@ -5,7 +5,8 @@ from .views import (
     AdminMCQQuestionViewSet, AdminMCQOptionViewSet, AdminCSVUploadView,
     SyncPushView, SyncPullView,
     ReadOnlyDomainViewSet, ReadOnlyCourseViewSet, ReadOnlySubCourseViewSet, ReadOnlyFlashcardViewSet,
-    ReadOnlyMCQQuestionViewSet
+    ReadOnlyMCQQuestionViewSet,
+    ShopCourseViewSet, EnrollmentView, MyEnrollmentsView
 )
 
 router = DefaultRouter()
@@ -27,9 +28,14 @@ router.register(r'subcourses', ReadOnlySubCourseViewSet, basename='subcourses')
 router.register(r'flashcards', ReadOnlyFlashcardViewSet, basename='flashcards')
 router.register(r'mcqs', ReadOnlyMCQQuestionViewSet, basename='mcqs')
 
+# Register Shop endpoints
+router.register(r'shop/courses', ShopCourseViewSet, basename='shop-courses')
+
 urlpatterns = [
     path('sync/push/', SyncPushView.as_view(), name='sync-push'),
     path('sync/pull/', SyncPullView.as_view(), name='sync-pull'),
     path('admin/csv-upload/', AdminCSVUploadView.as_view(), name='admin-csv-upload'),
+    path('enroll/', EnrollmentView.as_view(), name='enroll'),
+    path('my-enrollments/', MyEnrollmentsView.as_view(), name='my-enrollments'),
     path('', include(router.urls)),
 ]

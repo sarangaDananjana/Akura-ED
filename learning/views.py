@@ -8,10 +8,11 @@ from rest_framework.response import Response
 
 import csv
 import io
-from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption
+from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment
+from django.db.models import Q
 from .serializers import (
     DomainSerializer, CourseSerializer, SubCourseSerializer, FlashcardSerializer,
-    MCQQuestionSerializer, MCQOptionSerializer
+    MCQQuestionSerializer, MCQOptionSerializer, ShopCourseSerializer
 )
 
 # Initialize MongoClient globally for connection pooling across requests
@@ -250,12 +251,16 @@ class ReadOnlyCourseViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ReadOnlySubCourseViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only operations for SubCourses."""
-    queryset = SubCourse.objects.filter(is_active=True).order_by('priority')
     serializer_class = SubCourseSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        user = self.request.user
+        # Allow if subcourse is free OR user has enrolled in parent course OR user enrolled directly
+        queryset = SubCourse.objects.filter(is_active=True).filter(
+            Q(is_free=True) | Q(course__enrollments__user=user) | Q(enrollments__user=user)
+        ).distinct().order_by('priority')
+        
         course_id = self.request.query_params.get('course_id')
         if course_id:
             queryset = queryset.filter(course_id=course_id)
@@ -264,16 +269,120 @@ class ReadOnlySubCourseViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ReadOnlyFlashcardViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only operations for Flashcards."""
-    queryset = Flashcard.objects.all()
     serializer_class = FlashcardSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Flashcard.objects.filter(
+            Q(subcourse__is_free=True) | Q(subcourse__enrollments__user=user) | Q(subcourse__course__enrollments__user=user)
+        ).distinct()
 
 
 class ReadOnlyMCQQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only operations for MCQ Questions."""
-    queryset = MCQQuestion.objects.all()
     serializer_class = MCQQuestionSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return MCQQuestion.objects.filter(
+            Q(subcourse__is_free=True) | Q(subcourse__enrollments__user=user) | Q(subcourse__course__enrollments__user=user)
+        ).distinct()
+
+
+
+
+# --- Shop / E-Commerce Views ---
+
+class ShopCourseViewSet(viewsets.ReadOnlyModelViewSet):
+    """Lists all active courses in the shop, with pricing and purchase status."""
+    queryset = Course.objects.filter(is_active=True).order_by('priority')
+    serializer_class = ShopCourseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class EnrollmentView(APIView):
+    """
+    Endpoint to enroll in a free sub-course or purchase a parent course.
+    Expects {"course_id": <id>} OR {"subcourse_id": <id>}
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        course_id = request.data.get('course_id')
+        subcourse_id = request.data.get('subcourse_id')
+        
+        if not course_id and not subcourse_id:
+            return Response({"error": "course_id or subcourse_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if course_id:
+            try:
+                course = Course.objects.get(id=course_id, is_active=True)
+            except Course.DoesNotExist:
+                return Response({"error": "Course not found or inactive."}, status=status.HTTP_404_NOT_FOUND)
+                
+            if Enrollment.objects.filter(user=request.user, course=course).exists():
+                return Response({"error": "You are already enrolled in this course."}, status=status.HTTP_400_BAD_REQUEST)
+                
+            Enrollment.objects.create(
+                user=request.user,
+                course=course,
+                amount_paid=course.price
+            )
+            return Response({"message": "Successfully enrolled in course!"}, status=status.HTTP_201_CREATED)
+            
+        if subcourse_id:
+            try:
+                subcourse = SubCourse.objects.get(id=subcourse_id, is_active=True)
+            except SubCourse.DoesNotExist:
+                return Response({"error": "SubCourse not found or inactive."}, status=status.HTTP_404_NOT_FOUND)
+                
+            if not subcourse.is_free:
+                return Response({"error": "This sub-course is not free. You must purchase the parent course."}, status=status.HTTP_403_FORBIDDEN)
+                
+            if Enrollment.objects.filter(user=request.user, subcourse=subcourse).exists():
+                return Response({"error": "You are already enrolled in this free sub-course."}, status=status.HTTP_400_BAD_REQUEST)
+                
+            Enrollment.objects.create(
+                user=request.user,
+                subcourse=subcourse,
+                amount_paid=0.00
+            )
+            return Response({"message": "Successfully enrolled in free sub-course!"}, status=status.HTTP_201_CREATED)
+
+class MyEnrollmentsView(APIView):
+    """
+    Returns a list of all courses and sub-courses the user is enrolled in.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        enrollments = Enrollment.objects.filter(user=request.user)
+        
+        courses = []
+        subcourses = []
+        
+        for e in enrollments:
+            if e.course:
+                # We could serialize properly, but returning dicts is fine for this endpoint
+                courses.append({
+                    "id": e.course.id,
+                    "title": e.course.title,
+                    "enrolled_at": e.enrolled_at
+                })
+            if e.subcourse:
+                subcourses.append({
+                    "id": e.subcourse.id,
+                    "title": e.subcourse.title,
+                    "enrolled_at": e.enrolled_at
+                })
+                
+        return Response({
+            "courses": courses,
+            "subcourses": subcourses
+        }, status=status.HTTP_200_OK)
+
 
 
 class AdminCSVUploadView(APIView):

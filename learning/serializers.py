@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption
+from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment
 
 class DomainSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,6 +10,19 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = '__all__'
+
+class ShopCourseSerializer(serializers.ModelSerializer):
+    is_purchased = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Course
+        fields = '__all__'
+    
+    def get_is_purchased(self, obj):
+        user = self.context['request'].user
+        if not user.is_authenticated:
+            return False
+        return obj.enrollments.filter(user=user).exists()
 
 
 class SubCourseSerializer(serializers.ModelSerializer):
@@ -69,3 +82,9 @@ class MCQQuestionSerializer(serializers.ModelSerializer):
                     is_correct=opt.get('is_correct', False)
                 )
         return question
+
+
+class EnrollmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enrollment
+        fields = '__all__'

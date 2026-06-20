@@ -140,7 +140,8 @@ function renderCourses(coursesToRender) {
 
 async function submitCourse(e) {
             e.preventDefault();
-            const payload = { course: parseInt(document.getElementById('subcourseParentId').value), title: document.getElementById('courseTitle').value, description: document.getElementById('courseDesc').value, is_active: document.getElementById('courseActive').checked };
+            const payload = { course: parseInt(document.getElementById('subcourseParentId').value), title: document.getElementById('courseTitle').value, description: document.getElementById('courseDesc').value,
+                is_free: document.getElementById('courseIsFree').checked, is_active: document.getElementById('courseActive').checked };
             const method = editMode ? 'PUT' : 'POST';
             const endpoint = editMode ? `learning/admin/subcourses/${currentEditId}/` : 'learning/admin/subcourses/';
             const res = await apiCall(endpoint, method, payload);
@@ -154,6 +155,7 @@ function editCourse(id) {
             document.getElementById('subcourseParentId').value = c.course;
             document.getElementById('courseTitle').value = c.title;
             document.getElementById('courseDesc').value = c.description;
+            document.getElementById('courseIsFree').checked = c.is_free;
             document.getElementById('courseActive').checked = c.is_active;
             openModal('courseModal', true);
         }

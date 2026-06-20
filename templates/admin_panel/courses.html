@@ -135,7 +135,8 @@ function renderParentCourses() {
 
 async function submitParentCourse(e) {
             e.preventDefault();
-            const payload = { domain: parseInt(document.getElementById('pcDomainId').value), title: document.getElementById('parentCourseTitle').value, description: document.getElementById('parentCourseDesc').value, is_active: document.getElementById('parentCourseActive').checked };
+            const payload = { domain: parseInt(document.getElementById('pcDomainId').value), title: document.getElementById('parentCourseTitle').value, description: document.getElementById('parentCourseDesc').value,
+                price: document.getElementById('parentCoursePrice').value, is_active: document.getElementById('parentCourseActive').checked };
             const method = editMode ? 'PUT' : 'POST';
             const endpoint = editMode ? `learning/admin/courses/${currentEditId}/` : 'learning/admin/courses/';
             const res = await apiCall(endpoint, method, payload);
@@ -149,6 +150,7 @@ function editParentCourse(id) {
             document.getElementById('pcDomainId').value = c.domain;
             document.getElementById('parentCourseTitle').value = c.title;
             document.getElementById('parentCourseDesc').value = c.description;
+            document.getElementById('parentCoursePrice').value = c.price || '0.00';
             document.getElementById('parentCourseActive').checked = c.is_active;
             openModal('parentCourseModal', true);
         }
