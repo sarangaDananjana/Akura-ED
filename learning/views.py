@@ -223,6 +223,13 @@ class AdminMCQQuestionViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
     serializer_class = MCQQuestionSerializer
     permission_classes = [permissions.IsAdminUser]
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        subcourse_id = self.request.query_params.get('subcourse_id')
+        if subcourse_id:
+            queryset = queryset.filter(subcourse_id=subcourse_id)
+        return queryset
+
 
 class AdminMCQOptionViewSet(viewsets.ModelViewSet):
     """CRUD operations for MCQ Options.

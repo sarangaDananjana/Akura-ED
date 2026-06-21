@@ -6,8 +6,8 @@
                     <div class="flex items-center gap-4">
                         <div class="relative">
                             <i class="ph ph-funnel absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                            <select id="mcqFilter" onchange="renderMCQs()" class="pl-10 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-56 shadow-sm transition-all appearance-none cursor-pointer">
-                                <option value="all">All Sub-Courses</option>
+                            <select id="mcqFilter" onchange="fetchFilteredMCQs()" class="pl-10 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-56 shadow-sm transition-all appearance-none cursor-pointer">
+                                <option value="" disabled selected>Select a Sub-Course</option>
                             </select>
                         </div>
                         <div class="flex gap-2">
@@ -131,21 +131,42 @@ function openModal(modalId, isEdit = false) {
             }
         }
 
+async function fetchFilteredMCQs() {
+            const filterCourseId = document.getElementById('mcqFilter').value;
+            const tbody = document.getElementById('mcqTableBody');
+            
+            if (!filterCourseId) {
+                state.mcqs = [];
+                renderMCQs();
+                return;
+            }
+            
+            tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500"><div class="flex justify-center items-center gap-2"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>Loading...</div></td></tr>';
+            
+            const mData = await apiCall(`learning/admin/mcqs/?subcourse_id=${filterCourseId}`);
+            if (mData) {
+                state.mcqs = mData.results || mData;
+                renderMCQs();
+            } else {
+                state.mcqs = [];
+                renderMCQs();
+            }
+        }
+
 function renderMCQs() {
             const tbody = document.getElementById('mcqTableBody');
-            const filterCourseId = document.getElementById('mcqFilter').value;
             
-            const filtered = state.mcqs.filter(m => {
-                if (filterCourseId === 'all') return true;
-                return m.subcourse.toString() === filterCourseId;
-            });
+            if (state.mcqs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No MCQs found. Select a sub-course to load data.</td></tr>';
+                return;
+            }
 
-            tbody.innerHTML = filtered.map(m => {
+            tbody.innerHTML = state.mcqs.map((m, index) => {
                 const courseName = state.courses.find(c => c.id === m.subcourse)?.title || 'Unknown';
                 return `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4"><input type="checkbox" value="${m.id}" class="row-checkbox-mcq w-4 h-4 text-indigo-600 rounded border-slate-300" onchange="updateBulkDeleteBtn('mcq')"></td>
-                    <td class="px-6 py-4 text-slate-500 font-medium">#${m.id}</td>
+                    <td class="px-6 py-4 text-slate-500 font-medium text-lg">#${index + 1}</td>
                     <td class="px-6 py-4 text-slate-500 font-medium">${courseName}</td>
                     <td class="px-6 py-4 font-medium text-slate-800">${m.text.substring(0, 50)}...</td>
                     <td class="px-6 py-4 text-slate-500 font-medium">${(m.options || []).length} Options</td>
@@ -229,15 +250,16 @@ function populateCourseDropdowns() {
             const valMcq = mcqCourseId ? mcqCourseId.value : '';
             const valCsv = csvCourseId ? csvCourseId.value : '';
             const valFcFilter = flashcardFilter ? flashcardFilter.value : 'all';
-            const valMcqFilter = mcqFilter ? mcqFilter.value : 'all';
+            const valMcqFilter = mcqFilter ? mcqFilter.value : '';
 
             const options = state.courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
-            const filterOptions = '<option value="all">All Sub-Courses</option>' + options;
+            const filterOptions = '<option value="" disabled selected>Select a Sub-Course</option>' + options;
+            const fcFilterOptions = '<option value="all">All Sub-Courses</option>' + options;
             
             if(fcCourseId) fcCourseId.innerHTML = options;
             if(mcqCourseId) mcqCourseId.innerHTML = options;
             if(csvCourseId) csvCourseId.innerHTML = options;
-            if(flashcardFilter) flashcardFilter.innerHTML = filterOptions;
+            if(flashcardFilter) flashcardFilter.innerHTML = fcFilterOptions;
             if(mcqFilter) mcqFilter.innerHTML = filterOptions;
 
             if(fcCourseId && valFc) fcCourseId.value = valFc;
@@ -263,7 +285,13 @@ function addMCQOptionRow(text = '', isCorrect = false) {
 async function deleteMCQ(id) { if (confirm('Delete this MCQ?')) { await apiCall(`learning/admin/mcqs/${id}/`, 'DELETE'); location.reload(); } }
 
 document.addEventListener('DOMContentLoaded', async () => {
-const cData = await apiCall('learning/admin/subcourses/'); if(cData) { state.courses = cData.results || cData; populateCourseDropdowns(); } const mData = await apiCall('learning/admin/mcqs/'); if(mData){ state.mcqs = mData.results || mData; renderMCQs(); }
+    const cData = await apiCall('learning/admin/subcourses/'); 
+    if(cData) { 
+        state.courses = cData.results || cData; 
+        populateCourseDropdowns(); 
+    } 
+    state.mcqs = [];
+    renderMCQs();
 });
 </script>
 {% endblock %}

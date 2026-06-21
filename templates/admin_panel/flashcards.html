@@ -31,7 +31,6 @@
                                     <th class="px-6 py-4">ID</th>
                                     <th class="px-6 py-4">Course</th>
                                     <th class="px-6 py-4">Question</th>
-                                    <th class="px-6 py-4">Access</th>
                                     <th class="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -77,15 +76,6 @@
                         <textarea id="fcAnswer" required rows="2"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none resize-none"></textarea>
                     </div>
-                    <label
-                        class="flex items-center gap-3 p-4 border border-amber-100 bg-amber-50/50 rounded-xl cursor-pointer">
-                        <input type="checkbox" id="fcPremium"
-                            class="w-5 h-5 text-amber-500 border-amber-300 rounded focus:ring-amber-500">
-                        <div>
-                            <span class="block text-sm font-bold text-amber-900">Premium Only</span>
-                            <span class="block text-xs text-amber-700 mt-0.5">Restrict access to paid users</span>
-                        </div>
-                    </label>
                 </div>
                 <div class="flex justify-end gap-3 mt-8">
                     <button type="button" onclick="closeModal('flashcardModal')"
@@ -168,11 +158,6 @@ function renderFlashcards() {
                     <td class="px-6 py-4 text-slate-500 font-medium text-lg">#${index + 1}</td>
                     <td class="px-6 py-4 text-slate-500 font-medium">${courseName}</td>
                     <td class="px-6 py-4 font-medium text-slate-800">${f.question_text.substring(0, 50)}...</td>
-                    <td class="px-6 py-4">
-                        ${f.is_premium_only
-                        ? '<span class="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md"><i class="ph-fill ph-star"></i> Premium</span>'
-                        : '<span class="inline-flex items-center text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">Free Plan</span>'}
-                    </td>
                     <td class="px-6 py-4 text-right whitespace-nowrap">
                         <button onclick="editFlashcard(${f.id})" class="text-slate-400 hover:text-blue-500 transition-colors p-2 rounded-lg hover:bg-blue-50"><i class="ph ph-pencil-simple text-lg"></i></button>
                         <button onclick="deleteFlashcard(${f.id})" class="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50"><i class="ph ph-trash text-lg"></i></button>
@@ -188,7 +173,6 @@ async function submitFlashcard(e) {
             formData.append('question_text', document.getElementById('fcQuestion').value);
             formData.append('answer', document.getElementById('fcShortAnswer').value);
             formData.append('answer_text', document.getElementById('fcAnswer').value);
-            formData.append('is_premium_only', document.getElementById('fcPremium').checked);
             
             const qImage = document.getElementById('fcQuestionImage').files[0];
             if (qImage) formData.append('question_image', qImage);
@@ -214,7 +198,6 @@ function editFlashcard(id) {
             document.getElementById('fcQuestionImage').value = '';
             document.getElementById('fcQuestionVoice').value = '';
             document.getElementById('fcAnswer').value = f.answer_text;
-            document.getElementById('fcPremium').checked = f.is_premium_only;
             openModal('flashcardModal', true);
         }
 
