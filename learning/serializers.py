@@ -47,8 +47,7 @@ class MCQQuestionSerializer(serializers.ModelSerializer):
     # Nested serializer to fetch options alongside the question in the admin panel
     options = MCQOptionSerializer(many=True, read_only=True)
     
-    incoming_options = serializers.ListField(
-        child=serializers.DictField(),
+    incoming_options = serializers.JSONField(
         write_only=True,
         required=False
     )
@@ -59,6 +58,12 @@ class MCQQuestionSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         options_data = validated_data.pop('incoming_options', [])
+        if isinstance(options_data, str):
+            import json
+            try:
+                options_data = json.loads(options_data)
+            except Exception:
+                options_data = []
         question = super().create(validated_data)
         for opt in options_data:
             MCQOption.objects.create(
@@ -70,6 +75,12 @@ class MCQQuestionSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         options_data = validated_data.pop('incoming_options', None)
+        if isinstance(options_data, str):
+            import json
+            try:
+                options_data = json.loads(options_data)
+            except Exception:
+                options_data = []
         question = super().update(instance, validated_data)
         
         if options_data is not None:

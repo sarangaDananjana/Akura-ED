@@ -21,6 +21,7 @@ class Course(models.Model):
     title = models.CharField(max_length=255,default="none")
     description = models.TextField(blank=True, default="none")
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Price of the course.")
+    icon = models.CharField(max_length=100, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     priority = models.IntegerField(default=0, help_text="Priority for ordering. Lower numbers appear first.")
 
@@ -36,6 +37,7 @@ class SubCourse(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     is_free = models.BooleanField(default=False, help_text="If True, this sub-course is free even if the parent course is paid.")
+    icon = models.CharField(max_length=100, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     priority = models.IntegerField(default=0, help_text="Priority for ordering. Lower numbers appear first.")
 

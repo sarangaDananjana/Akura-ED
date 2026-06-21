@@ -51,6 +51,18 @@
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none appearance-none"></select>
                     </div>
                     <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Icon</label>
+                        <div class="flex items-center gap-3">
+                            <div id="parentCourseIconPreview" class="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                                <i class="ph ph-image text-slate-400"></i>
+                            </div>
+                            <input type="hidden" id="parentCourseIcon" value="">
+                            <button type="button" onclick="openIconPicker('parentCourseIcon')" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+                                Choose Icon
+                            </button>
+                        </div>
+                    </div>
+                    <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Course Title</label>
                         <input type="text" id="parentCourseTitle" required
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none">
@@ -96,6 +108,7 @@ function openModal(modalId, isEdit = false) {
                 document.getElementById('domainSubmitBtn').innerText = isEdit ? 'Update Domain' : 'Save Domain';
             } else if (modalId === 'parentCourseModal') {
                 document.getElementById('parentCourseModalTitle').innerText = isEdit ? 'Edit Parent Course' : 'Add Parent Course';
+                if(!isEdit) { document.getElementById('parentCourseIcon').value = ''; document.getElementById('parentCourseIconPreview').innerHTML = `<i class="ph ph-image text-slate-400"></i>`; }
                 document.getElementById('parentCourseSubmitBtn').innerText = isEdit ? 'Update Course' : 'Save Course';
             } else if (modalId === 'courseModal') {
                 document.getElementById('courseModalTitle').innerText = isEdit ? 'Edit Sub-Course' : 'Add Sub-Course';
@@ -120,7 +133,7 @@ function renderParentCourses() {
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4 text-slate-500 font-medium">#${c.id}</td>
                     <td class="px-6 py-4 text-slate-500 font-medium">${state.domains.find(d => d.id === c.domain)?.title || 'Unknown'}</td>
-                    <td class="px-6 py-4 font-bold text-slate-800">${c.title}</td>
+                    <td class="px-6 py-4 font-bold text-slate-800 flex items-center gap-3">${c.icon ? `<iconify-icon icon="${c.icon}" class="text-xl text-indigo-600"></iconify-icon>` : `<i class="ph ph-book text-xl text-slate-400"></i>`} ${c.title}</td>
                     <td class="px-6 py-4">
                         <input type="number" value="${c.priority || 0}" onchange="updateParentCoursePriority(${c.id}, this.value)" class="w-20 border border-slate-200 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                     </td>
@@ -141,7 +154,7 @@ function renderParentCourses() {
 async function submitParentCourse(e) {
             e.preventDefault();
             const payload = { domain: parseInt(document.getElementById('pcDomainId').value), title: document.getElementById('parentCourseTitle').value, description: document.getElementById('parentCourseDesc').value,
-                price: document.getElementById('parentCoursePrice').value, is_active: document.getElementById('parentCourseActive').checked };
+                price: document.getElementById('parentCoursePrice').value, icon: document.getElementById('parentCourseIcon').value, is_active: document.getElementById('parentCourseActive').checked };
             const method = editMode ? 'PUT' : 'POST';
             const endpoint = editMode ? `learning/admin/courses/${currentEditId}/` : 'learning/admin/courses/';
             const res = await apiCall(endpoint, method, payload);
@@ -156,6 +169,8 @@ function editParentCourse(id) {
             document.getElementById('parentCourseTitle').value = c.title;
             document.getElementById('parentCourseDesc').value = c.description;
             document.getElementById('parentCoursePrice').value = c.price || '0.00';
+            document.getElementById('parentCourseIcon').value = c.icon || '';
+            document.getElementById('parentCourseIconPreview').innerHTML = c.icon ? `<iconify-icon icon="${c.icon}" class="text-2xl text-indigo-600"></iconify-icon>` : `<i class="ph ph-image text-slate-400"></i>`;
             document.getElementById('parentCourseActive').checked = c.is_active;
             openModal('parentCourseModal', true);
         }

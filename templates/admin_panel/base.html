@@ -52,6 +52,7 @@
             }
         }
     </script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
 </head>
 
 <body
@@ -143,6 +144,31 @@
             <div id="toast" class="hidden fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl z-50 transition-all transform flex items-center gap-3 font-medium text-sm border"></div>
 
             {% block content %}{% endblock %}
+
+    
+    <!-- Icon Picker Modal -->
+    <div id="iconPickerModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-2xl transform scale-100 transition-transform flex flex-col max-h-[80vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-slate-900">Choose Icon</h3>
+                <button onclick="closeModal('iconPickerModal')" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x text-2xl"></i></button>
+            </div>
+            
+            <div class="relative mb-6">
+                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg"></i>
+                <input type="text" id="iconSearchInput" placeholder="Search icons (e.g., book, math, science)..." 
+                    class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+            </div>
+
+            <div id="iconGrid" class="flex-1 overflow-y-auto grid grid-cols-6 sm:grid-cols-8 gap-4 p-2">
+                <!-- Icons injected here -->
+            </div>
+            
+            <div class="mt-4 flex justify-end">
+                <button onclick="closeModal('iconPickerModal')" class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <!-- CSV Upload Modal -->
     <div id="csvUploadModal"
@@ -339,6 +365,61 @@
                 }
             });
         });
+        
+        let currentIconTarget = null;
+        let searchTimeout = null;
+
+        function openIconPicker(targetInputId) {
+            currentIconTarget = targetInputId;
+            document.getElementById('iconPickerModal').classList.remove('hidden');
+            const input = document.getElementById('iconSearchInput');
+            input.value = '';
+            document.getElementById('iconGrid').innerHTML = '<p class="col-span-full text-center text-slate-500 py-8">Type to search for icons...</p>';
+            input.focus();
+        }
+
+        document.getElementById('iconSearchInput')?.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            if (query.length < 2) return;
+            
+            searchTimeout = setTimeout(async () => {
+                const grid = document.getElementById('iconGrid');
+                grid.innerHTML = '<div class="col-span-full flex justify-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>';
+                
+                try {
+                    const res = await fetch(`https://api.iconify.design/search?query=${encodeURIComponent(query)}&limit=64`);
+                    const data = await res.json();
+                    
+                    if (data.icons && data.icons.length > 0) {
+                        grid.innerHTML = data.icons.map(icon => `
+                            <button onclick="selectIcon('${icon}')" class="flex flex-col items-center justify-center p-3 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition-colors border border-transparent hover:border-indigo-100 group">
+                                <iconify-icon icon="${icon}" class="text-3xl text-slate-600 group-hover:text-indigo-600 transition-colors"></iconify-icon>
+                            </button>
+                        `).join('');
+                    } else {
+                        grid.innerHTML = '<p class="col-span-full text-center text-slate-500 py-8">No icons found.</p>';
+                    }
+                } catch (err) {
+                    grid.innerHTML = '<p class="col-span-full text-center text-red-500 py-8">Failed to load icons.</p>';
+                }
+            }, 500);
+        });
+
+        function selectIcon(iconId) {
+            if (currentIconTarget) {
+                const targetInput = document.getElementById(currentIconTarget);
+                if (targetInput) targetInput.value = iconId;
+                
+                // Update preview if it exists
+                const preview = document.getElementById(currentIconTarget + 'Preview');
+                if (preview) {
+                    preview.innerHTML = `<iconify-icon icon="${iconId}" class="text-2xl text-indigo-600"></iconify-icon>`;
+                }
+            }
+            closeModal('iconPickerModal');
+        }
+
         function openCSVModal(modelType) {
             document.getElementById('csvModelType').value = modelType;
             document.getElementById('csvModalTitle').innerText = modelType === 'flashcard' ? 'Upload Flashcards CSV' : 'Upload MCQs CSV';
