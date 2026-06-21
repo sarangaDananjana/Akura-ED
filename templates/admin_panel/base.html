@@ -338,6 +338,8 @@
             const formData = new FormData();
             formData.append('model_type', document.getElementById('csvModelType').value);
             formData.append('subcourse_id', document.getElementById('csvCourseId').value);
+            formData.append('start_row', document.getElementById('csvStartRow').value);
+            formData.append('end_row', document.getElementById('csvEndRow').value);
             formData.append('file', document.getElementById('csvFile').files[0]);
 
             const btn = document.getElementById('csvSubmitBtn');
