@@ -243,6 +243,8 @@ function populateCourseDropdowns() {
             if(mcqFilter && valMcqFilter) mcqFilter.value = valMcqFilter;
         }
 
+async function deleteCourse(id) { if (confirm('Delete this sub-course? It will delete related MCQs and Flashcards.')) { await apiCall(`learning/admin/subcourses/${id}/`, 'DELETE'); location.reload(); } }
+
 document.addEventListener('DOMContentLoaded', async () => {
 const dData = await apiCall('learning/admin/domains/'); if(dData) { state.domains = dData.results || dData; }
 const pData = await apiCall('learning/admin/courses/'); if(pData) { state.parentcourses = pData.results || pData; populateParentCourseDropdowns(); fetchFilteredCourses(); }

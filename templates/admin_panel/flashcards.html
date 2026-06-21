@@ -226,6 +226,8 @@ function populateCourseDropdowns() {
             if(mcqFilter && valMcqFilter) mcqFilter.value = valMcqFilter;
         }
 
+async function deleteFlashcard(id) { if (confirm('Delete this flashcard?')) { await apiCall(`learning/admin/flashcards/${id}/`, 'DELETE'); location.reload(); } }
+
 document.addEventListener('DOMContentLoaded', async () => {
 const cData = await apiCall('learning/admin/subcourses/'); if(cData) { state.courses = cData.results || cData; populateCourseDropdowns(); } const fData = await apiCall('learning/admin/flashcards/'); if(fData){ state.flashcards = fData.results || fData; renderFlashcards(); }
 });

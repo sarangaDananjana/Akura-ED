@@ -221,6 +221,8 @@ function populateParentCourseDropdowns() {
             if(courseFilter && currentFilterVal) courseFilter.value = currentFilterVal;
         }
 
+async function deleteParentCourse(id) { if (confirm('Delete this parent course? It will delete ALL related sub-courses, MCQs, and Flashcards.')) { await apiCall(`learning/admin/courses/${id}/`, 'DELETE'); location.reload(); } }
+
 document.addEventListener('DOMContentLoaded', async () => {
 const dData = await apiCall('learning/admin/domains/'); if(dData) { state.domains = dData.results || dData; populateDomainDropdowns(); fetchFilteredParentCourses(); }
 });

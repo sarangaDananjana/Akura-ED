@@ -260,6 +260,8 @@ function addMCQOptionRow(text = '', isCorrect = false) {
             container.appendChild(div);
         }
 
+async function deleteMCQ(id) { if (confirm('Delete this MCQ?')) { await apiCall(`learning/admin/mcqs/${id}/`, 'DELETE'); location.reload(); } }
+
 document.addEventListener('DOMContentLoaded', async () => {
 const cData = await apiCall('learning/admin/subcourses/'); if(cData) { state.courses = cData.results || cData; populateCourseDropdowns(); } const mData = await apiCall('learning/admin/mcqs/'); if(mData){ state.mcqs = mData.results || mData; renderMCQs(); }
 });

@@ -197,6 +197,8 @@ function populateDomainDropdowns() {
             if(domainFilter && currentFilterVal) domainFilter.value = currentFilterVal;
         }
 
+async function deleteDomain(id) { if (confirm('Delete this domain? It will delete ALL related courses.')) { await apiCall(`learning/admin/domains/${id}/`, 'DELETE'); location.reload(); } }
+
 document.addEventListener('DOMContentLoaded', async () => {
 const dData = await apiCall('learning/admin/domains/'); if(dData){ state.domains = dData.results || dData; renderDomains(); }
 });
