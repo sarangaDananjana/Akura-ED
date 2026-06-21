@@ -1,5 +1,6 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+import uuid
 from pymongo import MongoClient, UpdateOne
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
@@ -8,11 +9,11 @@ from rest_framework.response import Response
 
 import csv
 import io
-from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment
+from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner
 from django.db.models import Q
 from .serializers import (
     DomainSerializer, CourseSerializer, SubCourseSerializer, FlashcardSerializer,
-    MCQQuestionSerializer, MCQOptionSerializer, ShopCourseSerializer
+    MCQQuestionSerializer, MCQOptionSerializer, ShopCourseSerializer, BannerSerializer
 )
 
 # Initialize MongoClient globally for connection pooling across requests
@@ -23,136 +24,184 @@ mongo_client = MongoClient(MONGO_URI) if MONGO_URI else None
 mongo_db = mongo_client['edtech_progress_db'] if mongo_client else None
 
 
-class SyncPushView(APIView):
+class FlashcardSyncView(APIView):
     """
-    API endpoint for the Flutter mobile app to push 'Delta' queue progress 
-    (MCQs and Flashcards) to MongoDB Atlas.
+    API endpoint to batch sync flashcard reviews (e.g., after 20 swipes).
+    Executes a bulk write to 'FlashcardProgress' collection.
     """
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         if not mongo_db:
-            return Response(
-                {"error": "MongoDB is not configured on the server."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        user_id = request.user.id
-        data = request.data
+        user_id = str(request.user.id)
+        reviews = request.data.get('reviews', [])
 
-        mcqs_data = data.get('mcqs', [])
-        flashcards_data = data.get('flashcards', [])
+        if not reviews:
+            return Response({"error": "No reviews provided."}, status=status.HTTP_400_BAD_REQUEST)
 
-        mcq_operations = []
-        flashcard_operations = []
-
-        # 1. Prepare MCQ updates
-        for mcq in mcqs_data:
-            subcourse_id = mcq.get('subcourse_id')
-            answers = mcq.get('answers', {})
-            
-            if not subcourse_id or not answers:
+        operations = []
+        for review in reviews:
+            flashcard_id = str(review.get('flashcardId'))
+            if not flashcard_id:
                 continue
 
-            set_fields = {}
-            for q_id_str, answer in answers.items():
-                set_fields[f'answers.{q_id_str}'] = answer
-
-            mcq_operations.append(
-                UpdateOne(
-                    {'user_id': user_id, 'subcourse_id': subcourse_id},
-                    {'$set': set_fields},
-                    upsert=True
-                )
-            )
-
-        # 2. Prepare Flashcard updates
-        for fc in flashcards_data:
-            card_id = fc.get('card_id')
-            if not card_id:
-                continue
-
+            # In a real app, you might use spaced repetition logic to determine lastReviewedAt and reviewCount.
             update_doc = {
                 '$set': {
-                    'status': fc.get('status'),
-                    'next_review': fc.get('next_review'),
+                    'status': review.get('status'),
+                    'lastReviewedAt': datetime.utcnow()
+                },
+                '$inc': {
+                    'reviewCount': 1
                 }
             }
 
-            # Optional history append
-            timestamp = fc.get('timestamp')
-            if timestamp:
-                interaction = {
-                    'status': fc.get('status'),
-                    'timestamp': timestamp
-                }
-                update_doc['$push'] = {
-                    'history': {
-                        '$each': [interaction],
-                        '$slice': -3  # Keep only the last 3 interactions
-                    }
-                }
-
-            flashcard_operations.append(
+            operations.append(
                 UpdateOne(
-                    {'user_id': user_id, 'card_id': card_id},
+                    {'userId': user_id, 'flashcardId': flashcard_id},
                     update_doc,
                     upsert=True
                 )
             )
 
-        # 3. Execute Bulk Writes
-        try:
-            if mcq_operations:
-                mongo_db['mcq_progress'].bulk_write(mcq_operations, ordered=False)
+        if operations:
+            try:
+                mongo_db['FlashcardProgress'].bulk_write(operations, ordered=False)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            if flashcard_operations:
-                mongo_db['flashcard_progress'].bulk_write(flashcard_operations, ordered=False)
-
-            return Response({"message": "Progress synced successfully"}, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"message": "Flashcard progress synced"}, status=status.HTTP_200_OK)
 
 
-class SyncPullView(APIView):
+class QuizStartView(APIView):
     """
-    API endpoint for the Flutter mobile app to pull the 'Complete' progress record 
-    (MCQs and Flashcards) from MongoDB Atlas.
+    Starts a quiz attempt.
     """
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         if not mongo_db:
-            return Response(
-                {"error": "MongoDB is not configured on the server."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        user_id = request.user.id
+        user_id = str(request.user.id)
+        quiz_id = str(request.data.get('quizId'))
 
-        try:
-            # Query the user's progress records, projecting out MongoDB _id and user_id
-            mcq_cursor = mongo_db['mcq_progress'].find(
-                {"user_id": user_id},
-                {"_id": 0, "user_id": 0}
-            )
-            flashcard_cursor = mongo_db['flashcard_progress'].find(
-                {"user_id": user_id},
-                {"_id": 0, "user_id": 0}
-            )
+        if not quiz_id:
+            return Response({"error": "quizId is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Convert cursors to lists
-            mcqs_list = list(mcq_cursor)
-            flashcards_list = list(flashcard_cursor)
+        # Check for existing completed sessions
+        existing_sessions = mongo_db['QuizSessions'].find(
+            {'userId': user_id, 'quizId': quiz_id, 'status': 'completed'}
+        )
+        existing_count = len(list(existing_sessions))
 
+        session_id = f"session_{uuid.uuid4().hex}"
+        now = datetime.utcnow()
+
+        if existing_count == 0:
+            # First attempt (Official)
+            expires_at = now + timedelta(minutes=15)
+            doc = {
+                '_id': session_id,
+                'userId': user_id,
+                'quizId': quiz_id,
+                'attemptNumber': 1,
+                'status': 'in_progress',
+                'startTime': now,
+                'expiresAt': expires_at,
+                'totalScore': 0,
+                'answers': []
+            }
+            mongo_db['QuizSessions'].insert_one(doc)
             return Response({
-                "mcqs": mcqs_list,
-                "flashcards": flashcards_list
+                "sessionId": session_id,
+                "isOfficial": True,
+                "expiresAt": expires_at
+            }, status=status.HTTP_200_OK)
+        else:
+            # Practice mode
+            attempt_number = existing_count + 1
+            doc = {
+                '_id': session_id,
+                'userId': user_id,
+                'quizId': quiz_id,
+                'attemptNumber': attempt_number,
+                'status': 'in_progress',
+                'startTime': now,
+                'expiresAt': None,
+                'totalScore': 0,
+                'answers': []
+            }
+            mongo_db['QuizSessions'].insert_one(doc)
+            return Response({
+                "sessionId": session_id,
+                "isOfficial": False,
+                "expiresAt": None
             }, status=status.HTTP_200_OK)
 
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class QuizSubmitView(APIView):
+    """
+    Submits a quiz attempt.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        if not mongo_db:
+            return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        user_id = str(request.user.id)
+        session_id = request.data.get('sessionId')
+        answers = request.data.get('answers', [])
+
+        if not session_id:
+            return Response({"error": "sessionId is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        session = mongo_db['QuizSessions'].find_one({'_id': session_id, 'userId': user_id})
+        if not session:
+            return Response({"error": "Session not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if session['status'] != 'in_progress':
+            return Response({"error": "Session is already completed or abandoned."}, status=status.HTTP_400_BAD_REQUEST)
+
+        now = datetime.utcnow()
+        is_official = session['attemptNumber'] == 1
+
+        if is_official and session['expiresAt'] and now > session['expiresAt']:
+            # Mark as abandoned/expired
+            mongo_db['QuizSessions'].update_one(
+                {'_id': session_id},
+                {'$set': {'status': 'abandoned', 'totalScore': 0, 'answers': []}}
+            )
+            return Response({"error": "Time limit exceeded. Session abandoned."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Calculate score locally for security (in real scenario, cross check with DB)
+        # Assuming the app passes `isCorrect` for simplicity of this architectural update:
+        total_score = sum(1 for ans in answers if ans.get('isCorrect'))
+        
+        # Here you could update the leaderboard profile if it's the first attempt
+        if is_official:
+            pass # TODO: Leaderboard update logic goes here
+
+        mongo_db['QuizSessions'].update_one(
+            {'_id': session_id},
+            {
+                '$set': {
+                    'status': 'completed',
+                    'totalScore': total_score,
+                    'answers': answers
+                }
+            }
+        )
+
+        return Response({
+            "message": "Quiz submitted successfully",
+            "totalScore": total_score,
+            "isOfficial": is_official
+        }, status=status.HTTP_200_OK)
+
 
 # --- Custom Admin Panel Views ---
 # All views here require the user to have an Admin account (is_staff=True)
@@ -529,3 +578,10 @@ class AdminCSVUploadView(APIView):
              return Response({"error": "File encoding not supported. Please save as UTF-8 CSV."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class BannerViewSet(viewsets.ModelViewSet):
+    """CRUD operations for Banners."""
+    queryset = Banner.objects.all().order_by('-created_at')
+    serializer_class = BannerSerializer
+    permission_classes = [permissions.AllowAny]

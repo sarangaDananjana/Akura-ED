@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment
+from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner
 
 class DomainSerializer(serializers.ModelSerializer):
     class Meta:
@@ -98,4 +98,10 @@ class MCQQuestionSerializer(serializers.ModelSerializer):
 class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
+        fields = '__all__'
+
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
         fields = '__all__'

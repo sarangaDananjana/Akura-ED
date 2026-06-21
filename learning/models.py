@@ -107,3 +107,14 @@ class Enrollment(models.Model):
     def __str__(self):
         target = self.course.title if self.course else (self.subcourse.title if self.subcourse else "Unknown")
         return f"{self.user.username} enrolled in {target}"
+
+
+class Banner(models.Model):
+    """Model to store banners for the application."""
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='banners/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

@@ -27,6 +27,50 @@
                         <div><p class="text-slate-500 text-sm font-semibold mb-1">Registered Users</p><h3 id="stat-users" class="text-3xl font-bold text-slate-900 tracking-tight">0</h3></div>
                     </div>
                 </div>
+<!-- Manage Banners Section -->
+            <div class="mt-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                    <i class="ph ph-image text-indigo-600"></i> Manage Banners
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Add Banner Form -->
+                    <div class="lg:col-span-1 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                        <h3 class="font-semibold text-slate-800 mb-4">Add New Banner</h3>
+                        <form id="bannerForm" onsubmit="addBanner(event)" class="flex flex-col gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Title</label>
+                                <input type="text" id="bannerTitle" required
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                                <textarea id="bannerDescription" rows="3"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Image</label>
+                                <input type="file" id="bannerImage" accept="image/*"
+                                    class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer text-sm">
+                            </div>
+                            <button type="submit" id="addBannerBtn"
+                                class="mt-2 bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
+                                Create Banner
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Banners List -->
+                    <div class="lg:col-span-2">
+                        <h3 class="font-semibold text-slate-800 mb-4 flex justify-between items-center">
+                            <span>Active Banners</span>
+                            <span id="stat-banners" class="text-sm bg-indigo-100 text-indigo-700 py-1 px-3 rounded-full">0</span>
+                        </h3>
+                        <div id="bannersList" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
+                            <!-- Banners will be rendered here -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
 {% endblock %}
@@ -36,7 +80,7 @@
 <script>
 async function loadAllData() {
             const dData = await apiCall('learning/admin/domains/');
-            if (dData) { state.domains = dData.results || dData; document.getElementById('stat-domains').innerText = state.domains.length; renderDomains(); populateDomainDropdowns(); }
+            if (dData) { state.domains = dData.results || dData; document.getElementById('stat-domains').innerText = state.domains.length; renderDomains?.(); populateDomainDropdowns?.(); }
 
             // Apply domain filter to courses fetch if selected
             const domainFilter = document.getElementById('courseDomainFilter')?.value;
@@ -44,23 +88,93 @@ async function loadAllData() {
             if (domainFilter && domainFilter !== 'all') { courseUrl += `?domain_id=${domainFilter}`; }
 
             const pData = await apiCall(courseUrl);
-            if (pData) { state.parentcourses = pData.results || pData; document.getElementById('stat-parentcourses').innerText = state.parentcourses.length; renderParentCourses(); populateParentCourseDropdowns(); }
+            if (pData) { state.parentcourses = pData.results || pData; document.getElementById('stat-parentcourses').innerText = state.parentcourses.length; renderParentCourses?.(); populateParentCourseDropdowns?.(); }
 
             const subcourseFilter = document.getElementById('subcourseCourseFilter')?.value;
             let subUrl = 'learning/admin/subcourses/';
             if (subcourseFilter && subcourseFilter !== 'all') { subUrl += `?course_id=${subcourseFilter}`; }
             const cData = await apiCall(subUrl);
-            if (cData) { state.courses = cData.results || cData; document.getElementById('stat-courses').innerText = state.courses.length; renderCourses(state.courses); populateCourseDropdowns(); }
+            if (cData) { state.courses = cData.results || cData; document.getElementById('stat-courses').innerText = state.courses.length; renderCourses?.(state.courses); populateCourseDropdowns?.(); }
 
             const fData = await apiCall('learning/admin/flashcards/');
-            if (fData) { state.flashcards = fData.results || fData; document.getElementById('stat-flashcards').innerText = state.flashcards.length; renderFlashcards(); }
+            if (fData) { state.flashcards = fData.results || fData; document.getElementById('stat-flashcards').innerText = state.flashcards.length; renderFlashcards?.(); }
 
             const mData = await apiCall('learning/admin/mcqs/');
-            if (mData) { state.mcqs = mData.results || mData; document.getElementById('stat-mcqs').innerText = state.mcqs.length; renderMCQs(); }
+            if (mData) { state.mcqs = mData.results || mData; document.getElementById('stat-mcqs').innerText = state.mcqs.length; renderMCQs?.(); }
 
             const uData = await apiCall('users/admin/users/');
-            if (uData) { state.users = uData.results || uData; document.getElementById('stat-users').innerText = state.users.length; renderUsers(); }
+            if (uData) { state.users = uData.results || uData; document.getElementById('stat-users').innerText = state.users.length; renderUsers?.(); }
+            
+            // Load Banners
+            loadBanners();
         }
+
+async function loadBanners() {
+    const data = await apiCall('learning/banners/');
+    if (data) {
+        const banners = data.results || data;
+        document.getElementById('stat-banners').innerText = banners.length;
+        const list = document.getElementById('bannersList');
+        
+        if (banners.length === 0) {
+            list.innerHTML = `<div class="col-span-full text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                <i class="ph ph-image text-4xl text-slate-300 mb-2"></i>
+                <p class="text-slate-500 font-medium text-sm">No banners created yet.</p>
+            </div>`;
+            return;
+        }
+
+        list.innerHTML = banners.map(b => `
+            <div class="bg-white border border-slate-100 shadow-sm rounded-2xl overflow-hidden group">
+                <div class="h-32 bg-slate-100 relative">
+                    ${b.image ? `<img src="${b.image}" class="w-full h-full object-cover">` : `<div class="flex h-full items-center justify-center text-slate-400"><i class="ph ph-image text-3xl"></i></div>`}
+                    <button onclick="deleteBanner(${b.id})" class="absolute top-2 right-2 bg-white/90 text-red-600 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50" title="Delete">
+                        <i class="ph ph-trash"></i>
+                    </button>
+                </div>
+                <div class="p-4">
+                    <h4 class="font-bold text-slate-800 text-sm truncate">${b.title}</h4>
+                    ${b.description ? `<p class="text-xs text-slate-500 mt-1 line-clamp-2">${b.description}</p>` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+async function addBanner(e) {
+    e.preventDefault();
+    const btn = document.getElementById('addBannerBtn');
+    btn.innerText = 'Creating...';
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('title', document.getElementById('bannerTitle').value);
+    formData.append('description', document.getElementById('bannerDescription').value);
+    
+    const fileField = document.getElementById('bannerImage');
+    if (fileField.files.length > 0) {
+        formData.append('image', fileField.files[0]);
+    }
+
+    const res = await apiCall('learning/banners/', 'POST', formData);
+    if (res) {
+        showToast('Banner created successfully!');
+        document.getElementById('bannerForm').reset();
+        loadBanners();
+    }
+    
+    btn.innerText = 'Create Banner';
+    btn.disabled = false;
+}
+
+async function deleteBanner(id) {
+    if(!confirm("Are you sure you want to delete this banner?")) return;
+    const res = await apiCall(`learning/banners/${id}/`, 'DELETE');
+    if (res) {
+        showToast('Banner deleted successfully');
+        loadBanners();
+    }
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
 loadAllData();

@@ -3,10 +3,11 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     AdminDomainViewSet, AdminCourseViewSet, AdminSubCourseViewSet, AdminFlashcardViewSet,
     AdminMCQQuestionViewSet, AdminMCQOptionViewSet, AdminCSVUploadView,
-    SyncPushView, SyncPullView,
     ReadOnlyDomainViewSet, ReadOnlyCourseViewSet, ReadOnlySubCourseViewSet, ReadOnlyFlashcardViewSet,
     ReadOnlyMCQQuestionViewSet,
-    ShopCourseViewSet, EnrollmentView, MyEnrollmentsView
+    ShopCourseViewSet, EnrollmentView, MyEnrollmentsView,
+    FlashcardSyncView, QuizStartView, QuizSubmitView,
+    BannerViewSet
 )
 
 router = DefaultRouter()
@@ -27,13 +28,15 @@ router.register(r'courses', ReadOnlyCourseViewSet, basename='courses')
 router.register(r'subcourses', ReadOnlySubCourseViewSet, basename='subcourses')
 router.register(r'flashcards', ReadOnlyFlashcardViewSet, basename='flashcards')
 router.register(r'mcqs', ReadOnlyMCQQuestionViewSet, basename='mcqs')
+router.register(r'banners', BannerViewSet, basename='banners')
 
 # Register Shop endpoints
 router.register(r'shop/courses', ShopCourseViewSet, basename='shop-courses')
 
 urlpatterns = [
-    path('sync/push/', SyncPushView.as_view(), name='sync-push'),
-    path('sync/pull/', SyncPullView.as_view(), name='sync-pull'),
+    path('api/flashcards/sync', FlashcardSyncView.as_view(), name='flashcard-sync'),
+    path('api/quiz/start', QuizStartView.as_view(), name='quiz-start'),
+    path('api/quiz/submit', QuizSubmitView.as_view(), name='quiz-submit'),
     path('admin/csv-upload/', AdminCSVUploadView.as_view(), name='admin-csv-upload'),
     path('enroll/', EnrollmentView.as_view(), name='enroll'),
     path('my-enrollments/', MyEnrollmentsView.as_view(), name='my-enrollments'),
