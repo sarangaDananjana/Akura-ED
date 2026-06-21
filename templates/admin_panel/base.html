@@ -304,8 +304,13 @@
             document.getElementById(modalId).classList.add('hidden');
             const form = document.querySelector(`#${modalId} form`);
             if (form) form.reset();
-            editMode = false;
-            currentEditId = null;
+            
+            // Only reset global edit state if we are closing a primary form modal, 
+            // not a nested modal like the icon picker.
+            if (modalId !== 'iconPickerModal') {
+                editMode = false;
+                currentEditId = null;
+            }
         }
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
