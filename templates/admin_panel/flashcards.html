@@ -66,6 +66,16 @@
                             <input type="file" id="fcQuestionVoice" accept="audio/*" class="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
                         </div>
                     </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Answer Image (Optional)</label>
+                            <input type="file" id="fcAnswerImage" accept="image/*" class="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Answer Audio (Optional)</label>
+                            <input type="file" id="fcAnswerVoice" accept="audio/*" class="w-full border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                        </div>
+                    </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Answer (Correct Option)</label>
                         <textarea id="fcShortAnswer" required rows="1"
@@ -178,6 +188,11 @@ async function submitFlashcard(e) {
             if (qImage) formData.append('question_image', qImage);
             const qVoice = document.getElementById('fcQuestionVoice').files[0];
             if (qVoice) formData.append('question_voice', qVoice);
+            
+            const aImage = document.getElementById('fcAnswerImage').files[0];
+            if (aImage) formData.append('answer_image', aImage);
+            const aVoice = document.getElementById('fcAnswerVoice').files[0];
+            if (aVoice) formData.append('answer_voice', aVoice);
 
             const method = editMode ? 'PUT' : 'POST';
             const endpoint = editMode ? `learning/admin/flashcards/${currentEditId}/` : 'learning/admin/flashcards/';
@@ -197,6 +212,8 @@ function editFlashcard(id) {
             document.getElementById('fcShortAnswer').value = f.answer || '';
             document.getElementById('fcQuestionImage').value = '';
             document.getElementById('fcQuestionVoice').value = '';
+            document.getElementById('fcAnswerImage').value = '';
+            document.getElementById('fcAnswerVoice').value = '';
             document.getElementById('fcAnswer').value = f.answer_text;
             openModal('flashcardModal', true);
         }

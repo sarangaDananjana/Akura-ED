@@ -62,6 +62,10 @@ class Flashcard(models.Model):
     # Answer fields
     answer = models.TextField(blank=True, null=True)
     answer_text = models.TextField()
+    answer_image = models.ImageField(
+        upload_to='flashcards/images/', blank=True, null=True)
+    answer_voice = models.FileField(
+        upload_to='flashcards/audio/', blank=True, null=True)
 
     order = models.IntegerField(default=0, help_text="Order in the sequence")
 
