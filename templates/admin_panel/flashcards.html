@@ -6,8 +6,8 @@
                     <div class="flex items-center gap-4">
                         <div class="relative">
                             <i class="ph ph-funnel absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                            <select id="flashcardFilter" onchange="renderFlashcards()" class="pl-10 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-56 shadow-sm transition-all appearance-none cursor-pointer">
-                                <option value="all">All Sub-Courses</option>
+                            <select id="flashcardFilter" onchange="fetchFilteredFlashcards()" class="pl-10 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-56 shadow-sm transition-all appearance-none cursor-pointer">
+                                <option value="" disabled selected>Select a Sub-Course</option>
                             </select>
                         </div>
                         <div class="flex gap-2">
@@ -130,21 +130,42 @@ function openModal(modalId, isEdit = false) {
             }
         }
 
+async function fetchFilteredFlashcards() {
+            const filterCourseId = document.getElementById('flashcardFilter').value;
+            const tbody = document.getElementById('flashcardTableBody');
+            
+            if (!filterCourseId) {
+                state.flashcards = [];
+                renderFlashcards();
+                return;
+            }
+            
+            tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500"><div class="flex justify-center items-center gap-2"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>Loading...</div></td></tr>';
+            
+            const fData = await apiCall(`learning/admin/flashcards/?subcourse_id=${filterCourseId}`);
+            if (fData) {
+                state.flashcards = fData.results || fData;
+                renderFlashcards();
+            } else {
+                state.flashcards = [];
+                renderFlashcards();
+            }
+        }
+
 function renderFlashcards() {
             const tbody = document.getElementById('flashcardTableBody');
-            const filterCourseId = document.getElementById('flashcardFilter').value;
             
-            const filtered = state.flashcards.filter(f => {
-                if (filterCourseId === 'all') return true;
-                return f.subcourse.toString() === filterCourseId;
-            });
+            if (state.flashcards.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No flashcards found. Select a sub-course to load data.</td></tr>';
+                return;
+            }
 
-            tbody.innerHTML = filtered.map(f => {
+            tbody.innerHTML = state.flashcards.map((f, index) => {
                 const courseName = state.courses.find(c => c.id === f.subcourse)?.title || 'Unknown';
                 return `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4"><input type="checkbox" value="${f.id}" class="row-checkbox-flashcard w-4 h-4 text-indigo-600 rounded border-slate-300" onchange="updateBulkDeleteBtn('flashcard')"></td>
-                    <td class="px-6 py-4 text-slate-500 font-medium">#${f.id}</td>
+                    <td class="px-6 py-4 text-slate-500 font-medium text-lg">#${index + 1}</td>
                     <td class="px-6 py-4 text-slate-500 font-medium">${courseName}</td>
                     <td class="px-6 py-4 font-medium text-slate-800">${f.question_text.substring(0, 50)}...</td>
                     <td class="px-6 py-4">
@@ -207,17 +228,18 @@ function populateCourseDropdowns() {
             const valFc = fcCourseId ? fcCourseId.value : '';
             const valMcq = mcqCourseId ? mcqCourseId.value : '';
             const valCsv = csvCourseId ? csvCourseId.value : '';
-            const valFcFilter = flashcardFilter ? flashcardFilter.value : 'all';
+            const valFcFilter = flashcardFilter ? flashcardFilter.value : '';
             const valMcqFilter = mcqFilter ? mcqFilter.value : 'all';
 
             const options = state.courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
-            const filterOptions = '<option value="all">All Sub-Courses</option>' + options;
+            const filterOptions = '<option value="" disabled selected>Select a Sub-Course</option>' + options;
+            const mcqFilterOptions = '<option value="all">All Sub-Courses</option>' + options;
             
             if(fcCourseId) fcCourseId.innerHTML = options;
             if(mcqCourseId) mcqCourseId.innerHTML = options;
             if(csvCourseId) csvCourseId.innerHTML = options;
             if(flashcardFilter) flashcardFilter.innerHTML = filterOptions;
-            if(mcqFilter) mcqFilter.innerHTML = filterOptions;
+            if(mcqFilter) mcqFilter.innerHTML = mcqFilterOptions;
 
             if(fcCourseId && valFc) fcCourseId.value = valFc;
             if(mcqCourseId && valMcq) mcqCourseId.value = valMcq;
@@ -229,7 +251,13 @@ function populateCourseDropdowns() {
 async function deleteFlashcard(id) { if (confirm('Delete this flashcard?')) { await apiCall(`learning/admin/flashcards/${id}/`, 'DELETE'); location.reload(); } }
 
 document.addEventListener('DOMContentLoaded', async () => {
-const cData = await apiCall('learning/admin/subcourses/'); if(cData) { state.courses = cData.results || cData; populateCourseDropdowns(); } const fData = await apiCall('learning/admin/flashcards/'); if(fData){ state.flashcards = fData.results || fData; renderFlashcards(); }
+    const cData = await apiCall('learning/admin/subcourses/'); 
+    if(cData) { 
+        state.courses = cData.results || cData; 
+        populateCourseDropdowns(); 
+    } 
+    state.flashcards = [];
+    renderFlashcards();
 });
 </script>
 {% endblock %}

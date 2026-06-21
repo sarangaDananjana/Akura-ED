@@ -209,6 +209,13 @@ class AdminFlashcardViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
     serializer_class = FlashcardSerializer
     permission_classes = [permissions.IsAdminUser]
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        subcourse_id = self.request.query_params.get('subcourse_id')
+        if subcourse_id:
+            queryset = queryset.filter(subcourse_id=subcourse_id)
+        return queryset
+
 
 class AdminMCQQuestionViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
     """CRUD operations for MCQ Questions."""
