@@ -14,6 +14,7 @@ class CustomUser(AbstractUser):
 
     # Add any other profile fields you might need
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    profile_photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
     auth_version = models.UUIDField(default=uuid.uuid4, editable=False)
 
     def __str__(self):
