@@ -251,6 +251,8 @@ class AdminSubCourseViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(course_id=course_id)
         return queryset
 
+from rest_framework.decorators import action
+
 
 class AdminFlashcardViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
     """CRUD operations for Flashcards. Allows uploading text, image, voice."""
@@ -265,6 +267,11 @@ class AdminFlashcardViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(subcourse_id=subcourse_id)
         return queryset
 
+    @action(detail=True, methods=['post'], url_path='update-item')
+    def update_item(self, request, *args, **kwargs):
+        # Handle multipart/form-data updates via POST to avoid Django PATCH data loss issue
+        return super().partial_update(request, *args, **kwargs)
+
 
 class AdminMCQQuestionViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
     """CRUD operations for MCQ Questions."""
@@ -278,6 +285,11 @@ class AdminMCQQuestionViewSet(BulkDeleteMixin, viewsets.ModelViewSet):
         if subcourse_id:
             queryset = queryset.filter(subcourse_id=subcourse_id)
         return queryset
+
+    @action(detail=True, methods=['post'], url_path='update-item')
+    def update_item(self, request, *args, **kwargs):
+        # Handle multipart/form-data updates via POST
+        return super().partial_update(request, *args, **kwargs)
 
 
 class AdminMCQOptionViewSet(viewsets.ModelViewSet):

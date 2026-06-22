@@ -216,8 +216,8 @@ async function submitMCQ(e) {
             const voiceFile = document.getElementById('mcqVoice').files[0];
             if (voiceFile) formData.append('voice', voiceFile);
 
-            const method = editMode ? 'PATCH' : 'POST';
-            const endpoint = editMode ? `learning/admin/mcqs/${currentEditId}/` : 'learning/admin/mcqs/';
+            const method = 'POST';
+            const endpoint = editMode ? `learning/admin/mcqs/${currentEditId}/update-item/` : 'learning/admin/mcqs/';
             
             const res = await apiCall(endpoint, method, formData);
             if (res) { showToast(editMode ? 'Question & Options updated!' : 'Question & Options added!'); closeModal('mcqModal'); location.reload(); }

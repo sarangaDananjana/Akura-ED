@@ -210,12 +210,12 @@ async function submitFlashcard(e) {
             const aVoice = document.getElementById('fcAnswerVoice').files[0];
             if (aVoice) formData.append('answer_voice', aVoice);
 
-            const method = editMode ? 'PUT' : 'POST';
-            const endpoint = editMode ? `learning/admin/flashcards/${currentEditId}/` : 'learning/admin/flashcards/';
+            const method = 'POST';
+            const endpoint = editMode ? `learning/admin/flashcards/${currentEditId}/update-item/` : 'learning/admin/flashcards/';
             
-            // For FormData with PUT, some backends (like Django REST framework) have issues unless you spoof it or use PATCH.
-            // Let's use PATCH for edit mode just in case, or stick to PUT.
-            const res = await apiCall(endpoint, editMode ? 'PATCH' : 'POST', formData);
+            // Django REST Framework drops file data for multipart/form-data on PATCH requests.
+            // Using a custom POST endpoint ensures the files are actually parsed and saved!
+            const res = await apiCall(endpoint, method, formData);
             if (res) { showToast(editMode ? 'Flashcard updated successfully!' : 'Flashcard saved successfully!'); closeModal('flashcardModal'); location.reload(); }
         }
 
