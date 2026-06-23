@@ -80,7 +80,7 @@
 <script>
 async function loadAllData() {
             const dData = await apiCall('learning/admin/domains/');
-            if (dData) { state.domains = dData.results || dData; document.getElementById('stat-domains').innerText = state.domains.length; renderDomains?.(); populateDomainDropdowns?.(); }
+            if (dData) { state.domains = dData.results || dData; document.getElementById('stat-domains').innerText = state.domains.length; }
 
             // Apply domain filter to courses fetch if selected
             const domainFilter = document.getElementById('courseDomainFilter')?.value;
@@ -88,22 +88,22 @@ async function loadAllData() {
             if (domainFilter && domainFilter !== 'all') { courseUrl += `?domain_id=${domainFilter}`; }
 
             const pData = await apiCall(courseUrl);
-            if (pData) { state.parentcourses = pData.results || pData; document.getElementById('stat-parentcourses').innerText = state.parentcourses.length; renderParentCourses?.(); populateParentCourseDropdowns?.(); }
+            if (pData) { state.parentcourses = pData.results || pData; document.getElementById('stat-parentcourses').innerText = state.parentcourses.length; }
 
             const subcourseFilter = document.getElementById('subcourseCourseFilter')?.value;
             let subUrl = 'learning/admin/subcourses/';
             if (subcourseFilter && subcourseFilter !== 'all') { subUrl += `?course_id=${subcourseFilter}`; }
             const cData = await apiCall(subUrl);
-            if (cData) { state.courses = cData.results || cData; document.getElementById('stat-courses').innerText = state.courses.length; renderCourses?.(state.courses); populateCourseDropdowns?.(); }
+            if (cData) { state.courses = cData.results || cData; document.getElementById('stat-courses').innerText = state.courses.length; }
 
             const fData = await apiCall('learning/admin/flashcards/');
-            if (fData) { state.flashcards = fData.results || fData; document.getElementById('stat-flashcards').innerText = state.flashcards.length; renderFlashcards?.(); }
+            if (fData) { state.flashcards = fData.results || fData; document.getElementById('stat-flashcards').innerText = state.flashcards.length; }
 
             const mData = await apiCall('learning/admin/mcqs/');
-            if (mData) { state.mcqs = mData.results || mData; document.getElementById('stat-mcqs').innerText = state.mcqs.length; renderMCQs?.(); }
+            if (mData) { state.mcqs = mData.results || mData; document.getElementById('stat-mcqs').innerText = state.mcqs.length; }
 
             const uData = await apiCall('users/admin/users/');
-            if (uData) { state.users = uData.results || uData; document.getElementById('stat-users').innerText = state.users.length; renderUsers?.(); }
+            if (uData) { state.users = uData.results || uData; document.getElementById('stat-users').innerText = state.users.length; }
             
             // Load Banners
             loadBanners();

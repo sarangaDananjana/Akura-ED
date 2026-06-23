@@ -14,13 +14,13 @@ class CustomUserAdmin(UserAdmin):
     # Add custom fields to the existing UserAdmin fieldsets
     fieldsets = UserAdmin.fieldsets + (
         ('Akura Profile', {
-            'fields': ('is_premium', 'daily_flashcard_limit', 'phone_number', 'auth_version'),
+            'fields': ('is_premium', 'daily_flashcard_limit', 'phone_number', 'profile_photo', 'auth_version'),
         }),
     )
 
     add_fieldsets = UserAdmin.add_fieldsets + (
         ('Akura Profile', {
-            'fields': ('is_premium', 'daily_flashcard_limit', 'phone_number'),
+            'fields': ('is_premium', 'daily_flashcard_limit', 'phone_number', 'profile_photo'),
         }),
     )
 
