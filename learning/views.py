@@ -566,6 +566,7 @@ class AdminCSVUploadView(APIView):
                         text=q_text
                     )
                     
+                    added_options = False
                     for i in range(1, 6):
                         opt_text = get_col_val(row_dict, [f'Option_{i}', f'Option {i}'])
                         opt_status = get_col_val(row_dict, [f'Status_{i}', f'Status {i}']).lower()
@@ -577,6 +578,41 @@ class AdminCSVUploadView(APIView):
                                 text=opt_text,
                                 is_correct=is_correct
                             )
+                            added_options = True
+                    
+                    if not added_options:
+                        question_answers = get_col_val(row_dict, ['Question Answers', 'Question_Answers', 'Answers', 'Options'])
+                        correct_answer = get_col_val(row_dict, ['Correct Answer', 'Correct_Answer', 'CorrectOption'])
+                        
+                        if question_answers:
+                            separator = ','
+                            if '|' in question_answers:
+                                separator = '|'
+                            elif '\n' in question_answers:
+                                separator = '\n'
+                                
+                            opts = [opt.strip() for opt in question_answers.split(separator) if opt.strip()]
+                            correct_ans_clean = correct_answer.strip().lower()
+                            
+                            found_correct = False
+                            for opt in opts:
+                                is_correct = (opt.lower() == correct_ans_clean)
+                                if is_correct:
+                                    found_correct = True
+                                MCQOption.objects.create(
+                                    question=question,
+                                    text=opt,
+                                    is_correct=is_correct
+                                )
+                            
+                            # If the explicitly provided correct answer wasn't in the options list, add it.
+                            if correct_answer and not found_correct:
+                                MCQOption.objects.create(
+                                    question=question,
+                                    text=correct_answer.strip(),
+                                    is_correct=True
+                                )
+
                     created_count += 1
             else:
                 return Response({"error": "Invalid upload type. Must be 'flashcard' or 'mcq'."}, status=status.HTTP_400_BAD_REQUEST)
