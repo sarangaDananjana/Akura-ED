@@ -496,7 +496,7 @@ class AdminCSVUploadView(APIView):
             for idx, row in enumerate(rows):
                 if row:
                     clean_row = [str(cell).strip().lower().replace(' ', '').replace('_', '') for cell in row]
-                    if 'questionid' in clean_row or 'questiontext' in clean_row:
+                    if 'questionid' in clean_row or 'questiontext' in clean_row or 'question' in clean_row:
                         header_idx = idx
                         break
             
@@ -533,7 +533,7 @@ class AdminCSVUploadView(APIView):
             if upload_type == 'flashcard':
                 for row_data in target_rows:
                     row_dict = dict(zip(headers, row_data))
-                    q_text = get_col_val(row_dict, ['Question_Text', 'Question Text'])
+                    q_text = get_col_val(row_dict, ['Question_Text', 'Question Text', 'Question'])
                     ans_desc = get_col_val(row_dict, ['Answer_Text', 'Answer Text', 'Correct_Description', 'Correct Description'])
                     ans_text = get_col_val(row_dict, ['Answer'])
                     
@@ -557,7 +557,7 @@ class AdminCSVUploadView(APIView):
             elif upload_type == 'mcq':
                 for row_data in target_rows:
                     row_dict = dict(zip(headers, row_data))
-                    q_text = get_col_val(row_dict, ['Question_Text', 'Question Text'])
+                    q_text = get_col_val(row_dict, ['Question_Text', 'Question Text', 'Question'])
                     if not q_text:
                         continue
                     
@@ -581,8 +581,8 @@ class AdminCSVUploadView(APIView):
                             added_options = True
                     
                     if not added_options:
-                        question_answers = get_col_val(row_dict, ['Question Answers', 'Question_Answers', 'Answers', 'Options'])
-                        correct_answer = get_col_val(row_dict, ['Correct Answer', 'Correct_Answer', 'CorrectOption'])
+                        question_answers = get_col_val(row_dict, ['Question Answers', 'Question_Answers', 'Answers', 'Options', 'Answer'])
+                        correct_answer = get_col_val(row_dict, ['Correct Answer', 'Correct_Answer', 'CorrectOption', 'Correct'])
                         
                         if question_answers:
                             separator = ','

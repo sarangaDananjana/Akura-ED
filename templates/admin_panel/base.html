@@ -267,24 +267,27 @@
                 const res = await fetch(`/api/${endpoint}`, options);
                 
                 if (res.status === 401 && !isRetry) {
-                    // Token might be expired, try refreshing it
                     const refreshed = await refreshAccessToken();
                     if (refreshed) {
                         return await apiCall(endpoint, method, body, true);
+                    } else {
+                        window.location.href = '/custom-admin/login/';
+                        return null;
                     }
                 }
 
-                if (res.status === 401 || res.status === 403) { 
-                    localStorage.clear(); 
-                    window.location.href = '/custom-admin/login/'; 
-                    return null;
+                if (!res.ok) {
+                    let errMsg = 'API Error';
+                    try {
+                        const errData = await res.json();
+                        errMsg = errData.error || errData.detail || JSON.stringify(errData);
+                    } catch (e) {}
+                    throw new Error(errMsg);
                 }
-                
-                if (!res.ok) throw new Error('API Error');
                 if (method !== 'DELETE') return await res.json();
                 return true;
             } catch (err) {
-                showToast('Action failed. Please try again.', 'error');
+                showToast(err.message || 'Action failed. Please try again.', 'error');
                 console.error(err);
                 return null;
             }
