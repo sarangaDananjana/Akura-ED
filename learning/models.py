@@ -69,6 +69,9 @@ class Flashcard(models.Model):
 
     order = models.IntegerField(default=0, help_text="Order in the sequence")
 
+    class Meta:
+        ordering = ['id']
+
     def __str__(self):
         return f"Flashcard: {self.question_text[:30]}"
 
@@ -81,6 +84,9 @@ class MCQQuestion(models.Model):
     image = models.ImageField(upload_to='mcqs/images/', blank=True, null=True)
     voice = models.FileField(upload_to='mcqs/audio/', blank=True, null=True)
 
+    class Meta:
+        ordering = ['id']
+
     def __str__(self):
         return f"MCQ: {self.text[:30]}"
 
@@ -92,6 +98,9 @@ class MCQOption(models.Model):
     text = models.CharField(max_length=255, blank=True, null=True)
     image = models.ImageField(upload_to='mcqs/options/', blank=True, null=True)
     is_correct = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['id']
 
     def __str__(self):
         return f"Option for {self.question.id}"
