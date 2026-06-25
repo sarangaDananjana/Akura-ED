@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta
+from django.utils import timezone
 import uuid
 from pymongo import MongoClient, UpdateOne
 from rest_framework import viewsets, permissions, status
@@ -31,6 +32,24 @@ class FlashcardSyncView(APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
 
+    def get(self, request, *args, **kwargs):
+        if not mongo_db:
+            return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        user_id = str(request.user.id)
+        # Fetch the progress for this user
+        progress_cursor = mongo_db['FlashcardProgress'].find({'userId': user_id})
+        
+        # Format it into a clean list
+        progress_list = []
+        for doc in progress_cursor:
+            progress_list.append({
+                'flashcardId': doc.get('flashcardId'),
+                'status': doc.get('status')
+            })
+            
+        return Response(progress_list, status=status.HTTP_200_OK)
+
     def post(self, request, *args, **kwargs):
         if not mongo_db:
             return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -51,7 +70,7 @@ class FlashcardSyncView(APIView):
             update_doc = {
                 '$set': {
                     'status': review.get('status'),
-                    'lastReviewedAt': datetime.utcnow()
+                    'lastReviewedAt': timezone.now()
                 },
                 '$inc': {
                     'reviewCount': 1
@@ -98,7 +117,7 @@ class QuizStartView(APIView):
         existing_count = len(list(existing_sessions))
 
         session_id = f"session_{uuid.uuid4().hex}"
-        now = datetime.utcnow()
+        now = timezone.now()
 
         if existing_count == 0:
             # First attempt (Official)
@@ -166,7 +185,7 @@ class QuizSubmitView(APIView):
         if session['status'] != 'in_progress':
             return Response({"error": "Session is already completed or abandoned."}, status=status.HTTP_400_BAD_REQUEST)
 
-        now = datetime.utcnow()
+        now = timezone.now()
         is_official = session['attemptNumber'] == 1
 
         if is_official and session['expiresAt'] and now > session['expiresAt']:
