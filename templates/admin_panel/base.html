@@ -53,6 +53,11 @@
         }
     </script>
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    
+    <!-- Cropper.js -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    
 </head>
 
 <body
@@ -208,6 +213,40 @@
                         class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-sm">Upload & Import</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Global Image Cropper Modal -->
+    <div id="globalCropperModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-4xl transform scale-100 transition-transform flex flex-col h-[85vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-slate-900">Crop Image</h3>
+                <div class="flex items-center gap-3">
+                    <label class="text-sm font-medium text-slate-600">Aspect Ratio:</label>
+                    <select id="cropperAspectRatio" class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                        <option value="NaN">Free</option>
+                        <option value="1.7777777777777777">16:9</option>
+                        <option value="0.8">4:5</option>
+                        <option value="1.25">5:4</option>
+                        <option value="0.75">3:4</option>
+                        <option value="1.3333333333333333">4:3</option>
+                        <option value="0.6666666666666666">2:3</option>
+                        <option value="1.5">3:2</option>
+                        <option value="1.4">7:5</option>
+                        <option value="0.7142857142857143">5:7</option>
+                        <option value="1">1:1</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex-1 bg-slate-100 rounded-2xl overflow-hidden relative">
+                <img id="cropperImage" src="" class="block max-w-full">
+            </div>
+            
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" id="cropperCancelBtn" class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+                <button type="button" id="cropperSaveBtn" class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-sm">Crop & Save</button>
+            </div>
         </div>
     </div>
 
@@ -460,6 +499,99 @@
                 btn.disabled = false;
             }
         }
+        
+        // --- Global Image Cropper Logic ---
+        let cropperInstance = null;
+        let currentFileInput = null;
+        let originalFileName = '';
+        
+        document.addEventListener('change', (e) => {
+            if (e.target && e.target.type === 'file' && e.target.accept && e.target.accept.includes('image/*') && !e.target.dataset.cropped) {
+                const file = e.target.files[0];
+                if (file) {
+                    currentFileInput = e.target;
+                    originalFileName = file.name;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const cropperImage = document.getElementById('cropperImage');
+                        cropperImage.src = event.target.result;
+                        
+                        document.getElementById('globalCropperModal').classList.remove('hidden');
+                        
+                        if (cropperInstance) {
+                            cropperInstance.destroy();
+                        }
+                        
+                        const selectedRatio = parseFloat(document.getElementById('cropperAspectRatio').value);
+                        cropperInstance = new Cropper(cropperImage, {
+                            aspectRatio: isNaN(selectedRatio) ? NaN : selectedRatio,
+                            viewMode: 2,
+                            autoCropArea: 1,
+                            background: false,
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        });
+        
+        document.getElementById('cropperAspectRatio').addEventListener('change', (e) => {
+            if (cropperInstance) {
+                const ratio = parseFloat(e.target.value);
+                cropperInstance.setAspectRatio(isNaN(ratio) ? NaN : ratio);
+            }
+        });
+        
+        document.getElementById('cropperCancelBtn').addEventListener('click', () => {
+            document.getElementById('globalCropperModal').classList.add('hidden');
+            if (currentFileInput) {
+                currentFileInput.value = ''; // Reset the input if cancelled
+                currentFileInput = null;
+            }
+            if (cropperInstance) cropperInstance.destroy();
+        });
+        
+        document.getElementById('cropperSaveBtn').addEventListener('click', () => {
+            if (!cropperInstance || !currentFileInput) return;
+            
+            const btn = document.getElementById('cropperSaveBtn');
+            btn.innerText = 'Saving...';
+            btn.disabled = true;
+            
+            cropperInstance.getCroppedCanvas({
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+            }).toBlob((blob) => {
+                if (!blob) {
+                    showToast('Failed to crop image', 'error');
+                    btn.innerText = 'Crop & Save';
+                    btn.disabled = false;
+                    return;
+                }
+                
+                const fileExtension = originalFileName.split('.').pop().toLowerCase();
+                const mimeType = blob.type; 
+                const newFile = new File([blob], originalFileName, { type: mimeType, lastModified: new Date().getTime() });
+                
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(newFile);
+                currentFileInput.files = dataTransfer.files;
+                
+                document.getElementById('globalCropperModal').classList.add('hidden');
+                if (cropperInstance) cropperInstance.destroy();
+                
+                btn.innerText = 'Crop & Save';
+                btn.disabled = false;
+                
+                currentFileInput.dataset.cropped = "true";
+                currentFileInput.dispatchEvent(new Event('change', { bubbles: true }));
+                
+                showToast('Image cropped successfully!', 'success');
+                currentFileInput = null;
+                
+            }, currentFileInput.files[0].type); 
+        });
 
     </script>
     {% endblock %}
