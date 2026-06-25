@@ -465,7 +465,7 @@ class AdminCSVUploadView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
     def post(self, request, *args, **kwargs):
-        upload_type = request.data.get('type')
+        upload_type = request.data.get('type') or request.data.get('model_type')
         subcourse_id = request.data.get('subcourse_id')
         start_row = int(request.data.get('start_row', 1))
         end_row = int(request.data.get('end_row', -1))
