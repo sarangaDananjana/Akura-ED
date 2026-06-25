@@ -555,6 +555,23 @@ class AdminCSVUploadView(APIView):
                         created_count += 1
                         
             elif upload_type == 'mcq':
+                # Find all option indices available in the headers
+                option_indices = []
+                for h in headers:
+                    clean_h = h.strip().lower().replace(' ', '').replace('_', '')
+                    if clean_h.startswith('option'):
+                        try:
+                            idx = int(clean_h.replace('option', ''))
+                            option_indices.append(idx)
+                        except ValueError:
+                            pass
+                
+                if not option_indices:
+                    # Fallback if headers are weird, try up to 20
+                    option_indices = list(range(1, 21))
+                else:
+                    option_indices = sorted(list(set(option_indices)))
+
                 for row_data in target_rows:
                     row_dict = dict(zip(headers, row_data))
                     q_text = get_col_val(row_dict, ['Question_Text', 'Question Text', 'Question'])
@@ -566,10 +583,9 @@ class AdminCSVUploadView(APIView):
                         text=q_text
                     )
                     
-                    added_options = False
-                    for i in range(1, 6):
-                        opt_text = get_col_val(row_dict, [f'Option_{i}', f'Option {i}'])
-                        opt_status = get_col_val(row_dict, [f'Status_{i}', f'Status {i}']).lower()
+                    for i in option_indices:
+                        opt_text = get_col_val(row_dict, [f'Option_{i}', f'Option {i}', f'Option{i}'])
+                        opt_status = get_col_val(row_dict, [f'Status_{i}', f'Status {i}', f'Status{i}']).lower()
                         
                         if opt_text:
                             is_correct = (opt_status == 'correct')
@@ -578,41 +594,6 @@ class AdminCSVUploadView(APIView):
                                 text=opt_text,
                                 is_correct=is_correct
                             )
-                            added_options = True
-                    
-                    if not added_options:
-                        question_answers = get_col_val(row_dict, ['Question Answers', 'Question_Answers', 'Answers', 'Options', 'Answer'])
-                        correct_answer = get_col_val(row_dict, ['Correct Answer', 'Correct_Answer', 'CorrectOption', 'Correct'])
-                        
-                        if question_answers:
-                            separator = ','
-                            if '|' in question_answers:
-                                separator = '|'
-                            elif '\n' in question_answers:
-                                separator = '\n'
-                                
-                            opts = [opt.strip() for opt in question_answers.split(separator) if opt.strip()]
-                            correct_ans_clean = correct_answer.strip().lower()
-                            
-                            found_correct = False
-                            for opt in opts:
-                                is_correct = (opt.lower() == correct_ans_clean)
-                                if is_correct:
-                                    found_correct = True
-                                MCQOption.objects.create(
-                                    question=question,
-                                    text=opt,
-                                    is_correct=is_correct
-                                )
-                            
-                            # If the explicitly provided correct answer wasn't in the options list, add it.
-                            if correct_answer and not found_correct:
-                                MCQOption.objects.create(
-                                    question=question,
-                                    text=correct_answer.strip(),
-                                    is_correct=True
-                                )
-
                     created_count += 1
             else:
                 return Response({"error": "Invalid upload type. Must be 'flashcard' or 'mcq'."}, status=status.HTTP_400_BAD_REQUEST)
