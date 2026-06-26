@@ -27,3 +27,4 @@ npm-debug.log*
 node_modules/      # Node.js
 venv/              # Python
 target/            # Java/Maven
+.env
