@@ -118,10 +118,10 @@ class QuizStartView(APIView):
 
         session_id = f"session_{uuid.uuid4().hex}"
         now = timezone.now()
+        expires_at = now + timedelta(minutes=15)
 
         if existing_count == 0:
             # First attempt (Official)
-            expires_at = now + timedelta(minutes=15)
             doc = {
                 '_id': session_id,
                 'userId': user_id,
@@ -149,7 +149,7 @@ class QuizStartView(APIView):
                 'attemptNumber': attempt_number,
                 'status': 'in_progress',
                 'startTime': now,
-                'expiresAt': None,
+                'expiresAt': expires_at,
                 'totalScore': 0,
                 'answers': []
             }
@@ -157,7 +157,7 @@ class QuizStartView(APIView):
             return Response({
                 "sessionId": session_id,
                 "isOfficial": False,
-                "expiresAt": None
+                "expiresAt": expires_at
             }, status=status.HTTP_200_OK)
 
 

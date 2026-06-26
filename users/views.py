@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from .serializers import CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer, UserSerializer, UserCreateSerializer
+from .utils import generate_otp_code, send_otp_sms
 
 User = get_user_model()
 
@@ -43,6 +45,63 @@ class UserMeView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ForgotPasswordView(APIView):
+    """Generates an OTP and sends it via SMS for password reset."""
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        username = request.data.get('username')
+        phone_number = request.data.get('phone_number')
+
+        if not username or not phone_number:
+            return Response({"detail": "Username and phone number are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(username=username, phone_number=phone_number)
+        except User.DoesNotExist:
+            return Response({"detail": "No user found with this username and phone number."}, status=status.HTTP_404_NOT_FOUND)
+
+        otp = generate_otp_code()
+        # Save OTP in cache for 5 minutes
+        cache.set(f"password_reset_otp_{username}", otp, timeout=300)
+        
+        success = send_otp_sms(phone_number, otp)
+        if success:
+            return Response({"detail": "OTP sent successfully."})
+        else:
+            return Response({"detail": "Failed to send OTP. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ResetPasswordView(APIView):
+    """Verifies OTP and resets the password."""
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        username = request.data.get('username')
+        otp = request.data.get('otp')
+        new_password = request.data.get('new_password')
+
+        if not username or not otp or not new_password:
+            return Response({"detail": "Username, OTP, and new password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        cached_otp = cache.get(f"password_reset_otp_{username}")
+        if not cached_otp or cached_otp != str(otp):
+            return Response({"detail": "Invalid or expired OTP."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        user.set_password(new_password)
+        user.save()
+        
+        # Clear the OTP from cache
+        cache.delete(f"password_reset_otp_{username}")
+
+        return Response({"detail": "Password reset successfully."})
+
 
 # --- Custom Admin Panel Views ---
 

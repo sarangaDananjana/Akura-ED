@@ -71,7 +71,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'is_premium',
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'is_premium',
                   'daily_flashcard_limit', 'is_staff', 'is_active', 'profile_photo')
         read_only_fields = ('id',)
 
@@ -81,7 +81,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'first_name')
+        fields = ('username', 'email', 'password', 'first_name', 'phone_number')
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -90,4 +90,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             first_name=validated_data.get('first_name', '')
         )
+        user.phone_number = validated_data.get('phone_number', '')
+        user.save()
         return user
