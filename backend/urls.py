@@ -19,10 +19,12 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
+from users.views import DeleteAccountWebView
 
 urlpatterns = [
     path('', TemplateView.as_view(template_name='index.html'), name='index'),
     path('privacy-policy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy_policy'),
+    path('delete-account/', DeleteAccountWebView.as_view(), name='delete_account'),
     # Default django admin (You can remove this if you strictly don't want it accessible at all)
     path('django-admin/', admin.site.urls),
 

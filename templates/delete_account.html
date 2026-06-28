@@ -1,0 +1,288 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Account — Akura Academy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,600&family=Sora:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #F7F5F0;
+            --white: #FDFCFA;
+            --ink: #0C0C0A;
+            --ink2: #1E1E1B;
+            --forest: #135ACE;
+            --forest2: #33BC8E;
+            --muted: #6A6860;
+            --border: #D4D0C8;
+            --surface: #EDEAE2;
+            --rule: 1px solid var(--border);
+            --ff-serif: 'Fraunces', 'Abhaya Libre', Georgia, serif;
+            --ff-sans: 'Sora', 'Abhaya Libre', sans-serif;
+            --ff-sinhala: 'Abhaya Libre', serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--ff-sans);
+            font-weight: 400;
+            line-height: 1.65;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* subtle paper grain */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.6;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            border-bottom: var(--rule);
+            background: rgba(247, 245, 240, 0.92);
+            backdrop-filter: blur(12px);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .logo-mark img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+        }
+
+        .logo-mark svg {
+            display: block;
+        }
+
+        .nav-wordmark {
+            font-family: var(--ff-serif);
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .nav-wordmark small {
+            display: block;
+            font-family: var(--ff-sans);
+            font-size: 9px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.2px;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--ink);
+        }
+
+        .nav-btn {
+            font-family: var(--ff-sans);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--white) !important;
+            background: var(--ink);
+            padding: 9px 20px;
+            border-radius: 2px;
+            transition: background 0.2s !important;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--forest) !important;
+            color: var(--white) !important;
+        }
+
+        /* ── CONTENT ── */
+        .content-section {
+            padding: 140px 48px 80px;
+            min-height: 100vh;
+        }
+
+        .wrap {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-family: var(--ff-serif);
+            font-size: clamp(32px, 5vw, 64px);
+            font-weight: 300;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            color: var(--ink);
+            margin-bottom: 24px;
+        }
+        
+        .btn-dark {
+            font-family: var(--ff-sans);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--white);
+            background: var(--ink);
+            padding: 14px 28px;
+            border: none;
+            border-radius: 2px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-block;
+        }
+
+        .btn-dark:hover {
+            background: var(--forest);
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 0 24px;
+            }
+            .nav-links {
+                display: none; /* simple responsive fix */
+            }
+            .content-section {
+                padding: 120px 24px 60px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAV -->
+    <nav>
+        <a href="{% url 'index' %}" class="nav-logo">
+            <div class="logo-mark">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="24" height="24" rx="4" fill="var(--ink)" />
+                    <path d="M7 17L12 7L17 17" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M9 13H15" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="nav-wordmark">
+                Akura
+                <small>Academy</small>
+            </div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}#about">About</a></li>
+            <li><a href="{% url 'index' %}#features">Features</a></li>
+            <li><a href="{% url 'index' %}#leaderboard">Leaderboard</a></li>
+            <li><a href="{% url 'index' %}#testimonials">Community</a></li>
+        </ul>
+        <a href="#" class="nav-btn">Get the App</a>
+    </nav>
+
+    <!-- CONTENT -->
+    <section class="content-section">
+        <div class="wrap">
+            <h1 class="page-title">Delete Account</h1>
+
+            <div class="policy-content" style="background: var(--white); padding: 40px; border: var(--rule); border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                {% if success %}
+                    <div style="padding: 15px; background: #e6f4ea; color: #1e8e3e; border: 1px solid #1e8e3e; border-radius: 4px; margin-bottom: 20px;">
+                        <strong>Success!</strong> Your account has been permanently deleted. We are sorry to see you go!
+                    </div>
+                    <a href="{% url 'index' %}" class="btn-dark">Return to Home</a>
+                {% else %}
+                    <p style="font-size: 15px; color: var(--muted); margin-bottom: 30px;">
+                        To permanently delete your account and all associated data, please enter your credentials below. 
+                        <strong>This action cannot be undone.</strong>
+                    </p>
+                    
+                    {% if error %}
+                        <div style="padding: 15px; background: #fce8e6; color: #d93025; border: 1px solid #d93025; border-radius: 4px; margin-bottom: 20px;">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'delete_account' %}">
+                        {% csrf_token %}
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">Username</label>
+                            <input type="text" name="username" required style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--ink); font-family: var(--ff-sans);">
+                        </div>
+                        <div style="margin-bottom: 30px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">Password</label>
+                            <input type="password" name="password" required style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--ink); font-family: var(--ff-sans);">
+                        </div>
+                        <button type="submit" class="btn-dark" style="background: #d93025; width: 100%;">Permanently Delete My Account</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

@@ -3,8 +3,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.core.cache import cache
+from django.shortcuts import render
+from django.views import View
 from .serializers import CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer, UserSerializer, UserCreateSerializer
 from .utils import generate_otp_code, send_otp_sms
 
@@ -45,6 +47,11 @@ class UserMeView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class ForgotPasswordView(APIView):
     """Generates an OTP and sends it via SMS for password reset."""
@@ -105,6 +112,23 @@ class ResetPasswordView(APIView):
 
 # --- Custom Admin Panel Views ---
 
+class DeleteAccountWebView(View):
+    """Web view for users to delete their account by providing credentials."""
+    
+    def get(self, request):
+        return render(request, 'delete_account.html')
+
+    def post(self, request):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            user.delete()
+            return render(request, 'delete_account.html', {'success': True})
+        else:
+            return render(request, 'delete_account.html', {'error': 'Invalid username or password.'})
 
 class AdminUserViewSet(viewsets.ModelViewSet):
     """
