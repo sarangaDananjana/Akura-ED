@@ -22,6 +22,7 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('', TemplateView.as_view(template_name='index.html'), name='index'),
+    path('privacy-policy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy_policy'),
     # Default django admin (You can remove this if you strictly don't want it accessible at all)
     path('django-admin/', admin.site.urls),
 

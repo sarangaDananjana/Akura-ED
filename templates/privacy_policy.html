@@ -1,0 +1,325 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy — Akura Academy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,600&family=Sora:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #F7F5F0;
+            --white: #FDFCFA;
+            --ink: #0C0C0A;
+            --ink2: #1E1E1B;
+            --forest: #135ACE;
+            --forest2: #33BC8E;
+            --muted: #6A6860;
+            --border: #D4D0C8;
+            --surface: #EDEAE2;
+            --rule: 1px solid var(--border);
+            --ff-serif: 'Fraunces', 'Abhaya Libre', Georgia, serif;
+            --ff-sans: 'Sora', 'Abhaya Libre', sans-serif;
+            --ff-sinhala: 'Abhaya Libre', serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--ff-sans);
+            font-weight: 400;
+            line-height: 1.65;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* subtle paper grain */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.6;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            border-bottom: var(--rule);
+            background: rgba(247, 245, 240, 0.92);
+            backdrop-filter: blur(12px);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .logo-mark img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+        }
+
+        .logo-mark svg {
+            display: block;
+        }
+
+        .nav-wordmark {
+            font-family: var(--ff-serif);
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .nav-wordmark small {
+            display: block;
+            font-family: var(--ff-sans);
+            font-size: 9px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.2px;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--ink);
+        }
+
+        .nav-btn {
+            font-family: var(--ff-sans);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--white) !important;
+            background: var(--ink);
+            padding: 9px 20px;
+            border-radius: 2px;
+            transition: background 0.2s !important;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--forest) !important;
+            color: var(--white) !important;
+        }
+
+        /* ── CONTENT ── */
+        .content-section {
+            padding: 140px 48px 80px;
+            min-height: 100vh;
+        }
+
+        .wrap {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-family: var(--ff-serif);
+            font-size: clamp(32px, 5vw, 64px);
+            font-weight: 300;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            color: var(--ink);
+            margin-bottom: 24px;
+        }
+
+        .last-updated {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 48px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .policy-content h2 {
+            font-family: var(--ff-serif);
+            font-size: 28px;
+            font-weight: 400;
+            color: var(--ink);
+            margin-top: 48px;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .policy-content p {
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.8;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .policy-content ul {
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+
+        .policy-content li {
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.8;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .policy-content a {
+            color: var(--forest);
+            text-decoration: none;
+        }
+
+        .policy-content a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            nav {
+                padding: 0 24px;
+            }
+            .nav-links {
+                display: none; /* simple responsive fix */
+            }
+            .content-section {
+                padding: 120px 24px 60px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAV -->
+    <nav>
+        <a href="{% url 'index' %}" class="nav-logo">
+            <div class="logo-mark">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="24" height="24" rx="4" fill="var(--ink)" />
+                    <path d="M7 17L12 7L17 17" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M9 13H15" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="nav-wordmark">
+                Akura
+                <small>Academy</small>
+            </div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}#about">About</a></li>
+            <li><a href="{% url 'index' %}#features">Features</a></li>
+            <li><a href="{% url 'index' %}#leaderboard">Leaderboard</a></li>
+            <li><a href="{% url 'index' %}#testimonials">Community</a></li>
+        </ul>
+        <a href="#" class="nav-btn">Get the App</a>
+    </nav>
+
+    <!-- CONTENT -->
+    <section class="content-section">
+        <div class="wrap">
+            <h1 class="page-title">Privacy Policy</h1>
+            <p class="last-updated">Last Updated: June 28, 2026</p>
+
+            <div class="policy-content">
+                <p>Welcome to Akura Academy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website (akuraedu.com) and use our mobile applications (e.g., Exam Podda). Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the site or our applications.</p>
+
+                <h2>1. Information We Collect</h2>
+                <p>We may collect information about you in a variety of ways. The information we may collect includes:</p>
+                <ul>
+                    <li><strong>Personal Data:</strong> Personally identifiable information, such as your name, email address, and demographic information that you voluntarily give to us when you register with the app or when you choose to participate in various activities related to the app.</li>
+                    <li><strong>Derivative Data:</strong> Information our servers automatically collect when you access the site or app, such as your IP address, your browser type, your operating system, your access times, and the pages you have viewed directly before and after accessing the Site.</li>
+                    <li><strong>Financial Data:</strong> Financial information, such as data related to your payment method (e.g. valid credit card number, card brand, expiration date) that we may collect when you purchase, order, return, exchange, or request information about our services.</li>
+                </ul>
+
+                <h2>2. Use of Your Information</h2>
+                <p>Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you to:</p>
+                <ul>
+                    <li>Create and manage your account.</li>
+                    <li>Deliver targeted educational content and recommendations.</li>
+                    <li>Compile anonymous statistical data and analysis for use internally or with third parties.</li>
+                    <li>Process transactions and send you related information, including purchase confirmations and invoices.</li>
+                    <li>Respond to customer service requests and support needs.</li>
+                </ul>
+
+                <h2>3. Disclosure of Your Information</h2>
+                <p>We may share information we have collected about you in certain situations. Your information may be disclosed as follows:</p>
+                <ul>
+                    <li><strong>By Law or to Protect Rights:</strong> If we believe the release of information about you is necessary to respond to legal process, to investigate or remedy potential violations of our policies, or to protect the rights, property, and safety of others.</li>
+                    <li><strong>Third-Party Service Providers:</strong> We may share your information with third parties that perform services for us or on our behalf, including payment processing, data analysis, email delivery, hosting services, customer service, and marketing assistance.</li>
+                </ul>
+
+                <h2>4. Security of Your Information</h2>
+                <p>We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that despite our efforts, no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse.</p>
+
+                <h2>5. Policy for Children</h2>
+                <p>We do not knowingly solicit information from or market to children under the age of 13 without parental consent. If we learn that we have collected personal information from a child under age 13 without verifiable parental consent, we will delete that information as quickly as possible. If you believe we might have any information from or about a child under 13, please contact us.</p>
+
+                <h2>6. Contact Us</h2>
+                <p>If you have questions or comments about this Privacy Policy, please contact us at:</p>
+                <p>Akura Academy<br>
+                Email: support@akuraedu.com<br>
+                Website: akuraedu.com</p>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>
