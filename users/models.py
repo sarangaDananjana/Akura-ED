@@ -7,6 +7,12 @@ class CustomUser(AbstractUser):
     """
     Custom user model to handle premium access and learning preferences.
     """
+    ROLE_CHOICES = (
+        ('student', 'Student'),
+        ('teacher', 'Teacher'),
+        ('admin', 'Admin'),
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
     is_premium = models.BooleanField(
         default=False, help_text="Designates whether this user has paid for premium content.")
     daily_flashcard_limit = models.IntegerField(

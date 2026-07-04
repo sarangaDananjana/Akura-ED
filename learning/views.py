@@ -633,3 +633,85 @@ class BannerViewSet(viewsets.ModelViewSet):
     queryset = Banner.objects.all().order_by('-created_at')
     serializer_class = BannerSerializer
     permission_classes = [permissions.AllowAny]
+
+
+# --- Question & Teacher Views ---
+
+from .models import Question
+from .serializers import QuestionSerializer
+
+class StudentQuestionViewSet(viewsets.ModelViewSet):
+    """Allow students to ask questions about courses they are enrolled in."""
+    serializer_class = QuestionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Question.objects.filter(student=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        course = serializer.validated_data.get('course')
+        # Check if student is enrolled
+        is_enrolled = Enrollment.objects.filter(user=self.request.user, course=course).exists()
+        # They might be enrolled in a subcourse only, let's check both
+        if not is_enrolled:
+             is_enrolled = Enrollment.objects.filter(user=self.request.user, subcourse__course=course).exists()
+        
+        if not is_enrolled:
+             from rest_framework.exceptions import ValidationError
+             raise ValidationError({"course": "You are not enrolled in this course."})
+        
+        serializer.save(student=self.request.user)
+
+class TeacherDashboardStatsView(APIView):
+    """Stats for the teacher dashboard."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        if user.role != 'teacher':
+            return Response({"error": "Only teachers can access this."}, status=status.HTTP_403_FORBIDDEN)
+        
+        courses = Course.objects.filter(teachers=user)
+        subcourses = SubCourse.objects.filter(course__in=courses)
+        
+        # Total paid students for these courses and their subcourses
+        enrollments = Enrollment.objects.filter(
+            Q(course__in=courses) | Q(subcourse__in=subcourses)
+        ).filter(amount_paid__gt=0).distinct('user')
+
+        total_paid_students = enrollments.count()
+
+        return Response({
+            "courses_count": courses.count(),
+            "subcourses_count": subcourses.count(),
+            "total_paid_students": total_paid_students
+        })
+
+class TeacherQuestionViewSet(viewsets.ModelViewSet):
+    """For teachers to view and answer questions."""
+    serializer_class = QuestionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role != 'teacher':
+            return Question.objects.none()
+        return Question.objects.filter(course__teachers=user).order_by('-created_at')
+
+    def perform_update(self, serializer):
+        # Teacher answers the question
+        if 'answer_text' in serializer.validated_data:
+            serializer.validated_data['is_answered'] = True
+        serializer.save()
+
+class TeacherCourseViewSet(viewsets.ReadOnlyModelViewSet):
+    """For teachers to view their courses and subcourses."""
+    serializer_class = CourseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role != 'teacher':
+            return Course.objects.none()
+        return Course.objects.filter(teachers=user).order_by('priority')
+

@@ -1,9 +1,9 @@
 
 
 # IDE/Editor settings
-.vscode/           # Visual Studio Code
-.idea/             # IntelliJ/WebStorm/PyCharm
-*.swp              # Vim swap files
+.vscode/
+.idea/
+*.swp
 
 # Compiled/Build output
 bin/
@@ -19,12 +19,14 @@ build/
 npm-debug.log*
 
 # Sensitive information
-.env               # Environment variables
+.env
 *.key
 *.pem
 
 # Dependencies (language specific)
-node_modules/      # Node.js
-venv/              # Python
-target/            # Java/Maven
+node_modules/
+venv/
+.venv/
+__pycache__/
+target/
 .env

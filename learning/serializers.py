@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner
+from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner, Question
 
 class DomainSerializer(serializers.ModelSerializer):
     class Meta:
@@ -105,3 +105,13 @@ class BannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Banner
         fields = '__all__'
+
+
+class QuestionSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.username', read_only=True)
+    course_name = serializers.CharField(source='course.title', read_only=True)
+
+    class Meta:
+        model = Question
+        fields = '__all__'
+        read_only_fields = ('student', 'is_answered', 'created_at')

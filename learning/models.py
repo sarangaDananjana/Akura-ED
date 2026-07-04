@@ -22,6 +22,7 @@ class Course(models.Model):
     description = models.TextField(blank=True, default="none")
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Price of the course.")
     icon = models.CharField(max_length=100, blank=True, null=True)
+    teachers = models.ManyToManyField(CustomUser, related_name='taught_courses', limit_choices_to={'role': 'teacher'}, blank=True)
     is_active = models.BooleanField(default=True)
     priority = models.IntegerField(default=0, help_text="Priority for ordering. Lower numbers appear first.")
 
@@ -131,3 +132,15 @@ class Banner(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Question(models.Model):
+    course = models.ForeignKey(Course, related_name='questions', on_delete=models.CASCADE)
+    student = models.ForeignKey(CustomUser, related_name='asked_questions', on_delete=models.CASCADE)
+    text = models.TextField()
+    is_answered = models.BooleanField(default=False)
+    answer_text = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Question by {self.student.username} on {self.course.title}"

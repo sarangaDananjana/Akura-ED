@@ -51,6 +51,10 @@ urlpatterns = [
     path('custom-admin/users/', TemplateView.as_view(
         template_name='admin_panel/users.html'), name='custom-admin-users'),
 
+    path('teacher-panel/login/', TemplateView.as_view(
+        template_name='teacher_panel/login.html'), name='teacher-panel-login'),
+    path('teacher-panel/dashboard/', TemplateView.as_view(
+        template_name='teacher_panel/dashboard.html'), name='teacher-panel-dashboard'),
 ]
 
 # Serve media files in development

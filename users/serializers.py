@@ -23,6 +23,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['auth_version'] = str(user.auth_version)
         token['is_staff'] = user.is_staff
         token['is_premium'] = user.is_premium
+        token['role'] = user.role
         return token
 
 
@@ -47,6 +48,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
         access['auth_version'] = str(user.auth_version)
         access['is_staff'] = user.is_staff
         access['is_premium'] = user.is_premium
+        access['role'] = user.role
         data['access'] = str(access)
         
         # If rotation is enabled, also inject into the new refresh token
@@ -63,6 +65,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
             refresh['auth_version'] = str(user.auth_version)
             refresh['is_staff'] = user.is_staff
             refresh['is_premium'] = user.is_premium
+            refresh['role'] = user.role
             data['refresh'] = str(refresh)
             
         return data
@@ -72,7 +75,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'is_premium',
-                  'daily_flashcard_limit', 'is_staff', 'is_active', 'profile_photo')
+                  'daily_flashcard_limit', 'is_staff', 'is_active', 'profile_photo', 'role')
         read_only_fields = ('id',)
 
 

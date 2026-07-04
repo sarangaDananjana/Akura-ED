@@ -1,0 +1,161 @@
+{% extends 'teacher_panel/base.html' %}
+{% block content %}
+<div id="tab-dashboard" class="block space-y-8">
+    
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5 transition-transform hover:-translate-y-1">
+            <div class="w-14 h-14 rounded-2xl bg-fuchsia-50 text-fuchsia-600 flex items-center justify-center text-2xl"><i class="ph ph-folder"></i></div>
+            <div><p class="text-slate-500 text-sm font-semibold mb-1">My Courses</p><h3 id="stat-courses" class="text-3xl font-bold text-slate-900 tracking-tight">0</h3></div>
+        </div>
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5 transition-transform hover:-translate-y-1">
+            <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl"><i class="ph ph-books"></i></div>
+            <div><p class="text-slate-500 text-sm font-semibold mb-1">Sub-Courses</p><h3 id="stat-subcourses" class="text-3xl font-bold text-slate-900 tracking-tight">0</h3></div>
+        </div>
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5 transition-transform hover:-translate-y-1">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl"><i class="ph ph-users"></i></div>
+            <div><p class="text-slate-500 text-sm font-semibold mb-1">Paid Students</p><h3 id="stat-students" class="text-3xl font-bold text-slate-900 tracking-tight">0</h3></div>
+        </div>
+    </div>
+
+    <!-- Questions Section -->
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <i class="ph ph-question text-indigo-600"></i> Student Questions
+        </h2>
+        
+        <div class="space-y-4" id="questionsList">
+            <div class="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Answer Modal -->
+<div id="answerModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+    <div class="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-lg transform scale-100 transition-transform">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-900">Answer Question</h3>
+            <button onclick="closeModal('answerModal')" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x text-2xl"></i></button>
+        </div>
+        
+        <div class="mb-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <p class="text-xs text-slate-500 font-semibold mb-1" id="qModalCourse">Course Name</p>
+            <p class="text-sm font-medium text-slate-800" id="qModalText">Question text goes here</p>
+            <p class="text-xs text-slate-400 mt-2 text-right" id="qModalStudent">By student</p>
+        </div>
+
+        <form id="answerForm" onsubmit="submitAnswer(event)">
+            <input type="hidden" id="answerQuestionId">
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Your Answer</label>
+                <textarea id="answerText" required rows="4" class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none" placeholder="Type your answer..."></textarea>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeModal('answerModal')" class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+                <button type="submit" id="submitAnswerBtn" class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-sm">Submit Answer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+    async function loadDashboard() {
+        // Load User Info
+        try {
+            const token = getAccessToken();
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            document.getElementById('headerTeacherName').innerText = "Teacher ID: " + payload.user_id; // Real app would fetch profile
+        } catch(e) {}
+
+        // Load Stats
+        const statsData = await apiCall('learning/teacher-dashboard-stats/');
+        if (statsData) {
+            document.getElementById('stat-courses').innerText = statsData.courses_count || 0;
+            document.getElementById('stat-subcourses').innerText = statsData.subcourses_count || 0;
+            document.getElementById('stat-students').innerText = statsData.total_paid_students || 0;
+        }
+
+        // Load Questions
+        loadQuestions();
+    }
+
+    async function loadQuestions() {
+        const list = document.getElementById('questionsList');
+        const data = await apiCall('learning/teacher-questions/');
+        if (data) {
+            const questions = data.results || data;
+            
+            if (questions.length === 0) {
+                list.innerHTML = `<div class="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <i class="ph ph-check-circle text-4xl text-emerald-400 mb-2"></i>
+                    <p class="text-slate-500 font-medium text-sm">You have no pending questions!</p>
+                </div>`;
+                return;
+            }
+
+            list.innerHTML = questions.map(q => `
+                <div class="bg-white border ${q.is_answered ? 'border-slate-100 opacity-75' : 'border-indigo-100 shadow-sm'} rounded-2xl p-5 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between transition-all">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-xs font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded-md">${q.course_name}</span>
+                            <span class="text-xs text-slate-400 flex items-center gap-1"><i class="ph ph-user"></i> ${q.student_name}</span>
+                            ${q.is_answered ? '<span class="text-xs font-bold px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md"><i class="ph ph-check"></i> Answered</span>' : '<span class="text-xs font-bold px-2 py-1 bg-amber-100 text-amber-700 rounded-md">Pending</span>'}
+                        </div>
+                        <p class="text-slate-800 font-medium text-sm mb-2">Q: ${q.text}</p>
+                        ${q.is_answered ? `<div class="bg-slate-50 p-3 rounded-lg border border-slate-100"><p class="text-slate-600 text-sm"><span class="font-bold text-slate-700">A:</span> ${q.answer_text}</p></div>` : ''}
+                    </div>
+                    
+                    ${!q.is_answered ? `
+                    <button onclick="openAnswerModal(${q.id}, '${q.text.replace(/'/g, "\\'")}', '${q.course_name.replace(/'/g, "\\'")}', '${q.student_name.replace(/'/g, "\\'")}')" class="shrink-0 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2">
+                        <i class="ph ph-chat-text"></i> Answer
+                    </button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+    }
+
+    function openAnswerModal(id, text, course, student) {
+        document.getElementById('answerQuestionId').value = id;
+        document.getElementById('qModalText').innerText = text;
+        document.getElementById('qModalCourse').innerText = course;
+        document.getElementById('qModalStudent').innerText = "By " + student;
+        document.getElementById('answerText').value = '';
+        
+        document.getElementById('answerModal').classList.remove('hidden');
+    }
+
+    async function submitAnswer(e) {
+        e.preventDefault();
+        const id = document.getElementById('answerQuestionId').value;
+        const answer = document.getElementById('answerText').value;
+
+        const btn = document.getElementById('submitAnswerBtn');
+        btn.innerText = 'Submitting...';
+        btn.disabled = true;
+
+        const res = await apiCall(`learning/teacher-questions/${id}/`, 'PATCH', { answer_text: answer });
+        
+        btn.innerText = 'Submit Answer';
+        btn.disabled = false;
+
+        if (res) {
+            showToast('Answer submitted successfully!');
+            closeModal('answerModal');
+            loadQuestions();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDashboard();
+    });
+</script>
+{% endblock %}

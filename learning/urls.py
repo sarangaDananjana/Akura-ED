@@ -7,7 +7,7 @@ from .views import (
     ReadOnlyMCQQuestionViewSet,
     ShopCourseViewSet, EnrollmentView, MyEnrollmentsView,
     FlashcardSyncView, QuizStartView, QuizSubmitView,
-    BannerViewSet
+    BannerViewSet, StudentQuestionViewSet, TeacherDashboardStatsView, TeacherQuestionViewSet, TeacherCourseViewSet
 )
 
 router = DefaultRouter()
@@ -33,6 +33,11 @@ router.register(r'banners', BannerViewSet, basename='banners')
 # Register Shop endpoints
 router.register(r'shop/courses', ShopCourseViewSet, basename='shop-courses')
 
+# Teacher & Question endpoints
+router.register(r'student-questions', StudentQuestionViewSet, basename='student-questions')
+router.register(r'teacher-questions', TeacherQuestionViewSet, basename='teacher-questions')
+router.register(r'teacher-courses', TeacherCourseViewSet, basename='teacher-courses')
+
 urlpatterns = [
     path('api/flashcards/sync', FlashcardSyncView.as_view(), name='flashcard-sync'),
     path('api/quiz/start', QuizStartView.as_view(), name='quiz-start'),
@@ -40,5 +45,6 @@ urlpatterns = [
     path('admin/csv-upload/', AdminCSVUploadView.as_view(), name='admin-csv-upload'),
     path('enroll/', EnrollmentView.as_view(), name='enroll'),
     path('my-enrollments/', MyEnrollmentsView.as_view(), name='my-enrollments'),
+    path('teacher-dashboard-stats/', TeacherDashboardStatsView.as_view(), name='teacher-dashboard-stats'),
     path('', include(router.urls)),
 ]
