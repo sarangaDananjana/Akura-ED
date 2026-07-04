@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner
+from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner, Question
 
 @admin.register(Domain)
 class DomainAdmin(admin.ModelAdmin):
@@ -13,6 +13,7 @@ class CourseAdmin(admin.ModelAdmin):
     list_editable = ('priority', 'is_active', 'price')
     list_filter = ('domain', 'is_active')
     search_fields = ('title', 'description')
+    filter_horizontal = ('teachers',)
 
 @admin.register(SubCourse)
 class SubCourseAdmin(admin.ModelAdmin):
@@ -61,3 +62,11 @@ class BannerAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_at')
     search_fields = ('title', 'description')
     readonly_fields = ('created_at',)
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ('student', 'course', 'is_answered', 'created_at')
+    list_filter = ('is_answered', 'course', 'created_at')
+    search_fields = ('student__username', 'student__email', 'course__title', 'text')
+    readonly_fields = ('created_at',)
+
