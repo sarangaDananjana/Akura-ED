@@ -270,7 +270,7 @@ function populateCourseDropdowns() {
             const valFcFilter = flashcardFilter ? flashcardFilter.value : 'all';
             const valMcqFilter = mcqFilter ? mcqFilter.value : '';
 
-            const options = state.courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+            const options = state.courses.map(c => `<option value="${c.id}">${c.title}${c.course_name ? ' (' + c.course_name + ')' : ''}</option>`).join('');
             const filterOptions = '<option value="" disabled selected>Select a Sub-Course</option>' + options;
             const fcFilterOptions = '<option value="all">All Sub-Courses</option>' + options;
             

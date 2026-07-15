@@ -36,8 +36,9 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Add Banner Form -->
                     <div class="lg:col-span-1 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                        <h3 class="font-semibold text-slate-800 mb-4">Add New Banner</h3>
+                        <h3 id="bannerFormTitle" class="font-semibold text-slate-800 mb-4">Add New Banner</h3>
                         <form id="bannerForm" onsubmit="addBanner(event)" class="flex flex-col gap-4">
+                            <input type="hidden" id="bannerEditId" value="">
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Title</label>
                                 <input type="text" id="bannerTitle" required
@@ -49,14 +50,20 @@
                                     class="w-full border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"></textarea>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Image</label>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Image <span id="bannerImageHint" class="text-xs text-slate-500 font-normal"></span></label>
                                 <input type="file" id="bannerImage" accept="image/*"
                                     class="w-full border border-slate-200 bg-white rounded-xl px-4 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer text-sm">
                             </div>
-                            <button type="submit" id="addBannerBtn"
-                                class="mt-2 bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
-                                Create Banner
-                            </button>
+                            <div class="flex gap-2 mt-2">
+                                <button type="submit" id="addBannerBtn"
+                                    class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
+                                    Create Banner
+                                </button>
+                                <button type="button" id="cancelEditBtn" onclick="resetBannerForm()"
+                                    class="hidden bg-slate-200 text-slate-700 px-4 py-3 rounded-xl font-semibold hover:bg-slate-300 transition-colors">
+                                    Cancel
+                                </button>
+                            </div>
                         </form>
                     </div>
 
@@ -113,6 +120,7 @@ async function loadBanners() {
     const data = await apiCall('learning/banners/');
     if (data) {
         const banners = data.results || data;
+        state.banners = banners;
         document.getElementById('stat-banners').innerText = banners.length;
         const list = document.getElementById('bannersList');
         
@@ -128,9 +136,14 @@ async function loadBanners() {
             <div class="bg-white border border-slate-100 shadow-sm rounded-2xl overflow-hidden group">
                 <div class="h-32 bg-slate-100 relative">
                     ${b.image ? `<img src="${b.image}" class="w-full h-full object-cover">` : `<div class="flex h-full items-center justify-center text-slate-400"><i class="ph ph-image text-3xl"></i></div>`}
-                    <button onclick="deleteBanner(${b.id})" class="absolute top-2 right-2 bg-white/90 text-red-600 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50" title="Delete">
-                        <i class="ph ph-trash"></i>
-                    </button>
+                    <div class="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="editBanner(${b.id})" class="bg-white/90 text-blue-600 p-2 rounded-lg hover:bg-blue-50" title="Edit">
+                            <i class="ph ph-pencil-simple"></i>
+                        </button>
+                        <button onclick="deleteBanner(${b.id})" class="bg-white/90 text-red-600 p-2 rounded-lg hover:bg-red-50" title="Delete">
+                            <i class="ph ph-trash"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="p-4">
                     <h4 class="font-bold text-slate-800 text-sm truncate">${b.title}</h4>
@@ -141,10 +154,35 @@ async function loadBanners() {
     }
 }
 
+function editBanner(id) {
+    const b = state.banners.find(x => x.id === id);
+    if (!b) return;
+    document.getElementById('bannerEditId').value = b.id;
+    document.getElementById('bannerTitle').value = b.title;
+    document.getElementById('bannerDescription').value = b.description || '';
+    document.getElementById('bannerFormTitle').innerText = 'Edit Banner';
+    document.getElementById('addBannerBtn').innerText = 'Update Banner';
+    document.getElementById('cancelEditBtn').classList.remove('hidden');
+    document.getElementById('bannerImageHint').innerText = '(Leave empty to keep current)';
+    document.getElementById('bannerForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetBannerForm() {
+    document.getElementById('bannerEditId').value = '';
+    document.getElementById('bannerForm').reset();
+    document.getElementById('bannerFormTitle').innerText = 'Add New Banner';
+    document.getElementById('addBannerBtn').innerText = 'Create Banner';
+    document.getElementById('cancelEditBtn').classList.add('hidden');
+    document.getElementById('bannerImageHint').innerText = '';
+}
+
 async function addBanner(e) {
     e.preventDefault();
     const btn = document.getElementById('addBannerBtn');
-    btn.innerText = 'Creating...';
+    const editId = document.getElementById('bannerEditId').value;
+    const isEdit = !!editId;
+
+    btn.innerText = isEdit ? 'Updating...' : 'Creating...';
     btn.disabled = true;
 
     const formData = new FormData();
@@ -156,14 +194,17 @@ async function addBanner(e) {
         formData.append('image', fileField.files[0]);
     }
 
-    const res = await apiCall('learning/banners/', 'POST', formData);
+    const url = isEdit ? `learning/banners/${editId}/` : 'learning/banners/';
+    const method = isEdit ? 'PATCH' : 'POST';
+
+    const res = await apiCall(url, method, formData);
     if (res) {
-        showToast('Banner created successfully!');
-        document.getElementById('bannerForm').reset();
+        showToast(isEdit ? 'Banner updated successfully!' : 'Banner created successfully!');
+        resetBannerForm();
         loadBanners();
     }
     
-    btn.innerText = 'Create Banner';
+    btn.innerText = isEdit ? 'Update Banner' : 'Create Banner';
     btn.disabled = false;
 }
 

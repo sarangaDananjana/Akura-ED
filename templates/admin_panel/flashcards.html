@@ -28,7 +28,7 @@
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold border-b border-slate-100">
                                     <th class="px-6 py-4 w-12"><input type="checkbox" onchange="toggleSelectAll(this, 'flashcard')" class="w-4 h-4 text-indigo-600 rounded border-slate-300"></th>
-                                    <th class="px-6 py-4">Order</th>
+                                    <th class="px-6 py-4">#</th>
                                     <th class="px-6 py-4">Course</th>
                                     <th class="px-6 py-4">Question</th>
                                     <th class="px-6 py-4 text-right">Actions</th>
@@ -89,11 +89,6 @@
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Answer Description (Explanation)</label>
                         <textarea id="fcAnswer" rows="2"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none resize-none"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Order</label>
-                        <input type="number" id="fcOrder" required value="0"
-                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none">
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 mt-8">
@@ -180,7 +175,7 @@ function renderFlashcards() {
                 return `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4"><input type="checkbox" value="${f.id}" class="row-checkbox-flashcard w-4 h-4 text-indigo-600 rounded border-slate-300" onchange="updateBulkDeleteBtn('flashcard')"></td>
-                    <td class="px-6 py-4 text-slate-500 font-medium text-lg">${f.order !== undefined && f.order !== null ? f.order : 0}</td>
+                    <td class="px-6 py-4 text-slate-500 font-medium text-lg">#${index + 1}</td>
                     <td class="px-6 py-4 text-slate-500 font-medium">${courseName}</td>
                     <td class="px-6 py-4 font-medium text-slate-800">${f.question_text.substring(0, 50)}...</td>
                     <td class="px-6 py-4 text-right whitespace-nowrap">
@@ -198,7 +193,6 @@ async function submitFlashcard(e) {
             formData.append('question_text', document.getElementById('fcQuestion').value);
             formData.append('answer', document.getElementById('fcShortAnswer').value);
             formData.append('answer_text', document.getElementById('fcAnswer').value);
-            formData.append('order', document.getElementById('fcOrder').value || 0);
             
             const qImage = document.getElementById('fcQuestionImage').files[0];
             if (qImage) formData.append('question_image', qImage);
@@ -231,7 +225,6 @@ function editFlashcard(id) {
             document.getElementById('fcAnswerImage').value = '';
             document.getElementById('fcAnswerVoice').value = '';
             document.getElementById('fcAnswer').value = f.answer_text;
-            document.getElementById('fcOrder').value = f.order || 0;
 
             const setupPreview = (id, url) => {
                 const el = document.getElementById(id);
@@ -263,7 +256,7 @@ function populateCourseDropdowns() {
             const valFcFilter = flashcardFilter ? flashcardFilter.value : '';
             const valMcqFilter = mcqFilter ? mcqFilter.value : 'all';
 
-            const options = state.courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+            const options = state.courses.map(c => `<option value="${c.id}">${c.title}${c.course_name ? ' (' + c.course_name + ')' : ''}</option>`).join('');
             const filterOptions = '<option value="" disabled selected>Select a Sub-Course</option>' + options;
             const mcqFilterOptions = '<option value="all">All Sub-Courses</option>' + options;
             

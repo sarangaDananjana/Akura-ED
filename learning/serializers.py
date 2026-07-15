@@ -26,6 +26,8 @@ class ShopCourseSerializer(serializers.ModelSerializer):
 
 
 class SubCourseSerializer(serializers.ModelSerializer):
+    course_name = serializers.CharField(source='course.title', read_only=True)
+
     class Meta:
         model = SubCourse
         fields = '__all__'
