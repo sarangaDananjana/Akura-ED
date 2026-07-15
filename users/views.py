@@ -7,7 +7,9 @@ from django.contrib.auth import get_user_model, authenticate
 from django.core.cache import cache
 from django.shortcuts import render
 from django.views import View
-from .serializers import CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer, UserSerializer, UserCreateSerializer
+from rest_framework.decorators import action
+from learning.models import Course, Enrollment
+from .serializers import CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer, UserSerializer, UserCreateSerializer, AdminUserDetailSerializer
 from .utils import generate_otp_code, send_otp_sms
 
 User = get_user_model()
@@ -136,6 +138,41 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     Requires Admin (is_staff=True) privileges.
     """
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = AdminUserDetailSerializer
     permission_classes = [permissions.IsAdminUser]
-    # IsAdminUser ensures only users with is_staff=True can access these endpoints.
+    
+    @action(detail=False, methods=['post'], url_path='manual-enroll')
+    def manual_enroll(self, request):
+        code = request.data.get('code')
+        if not code:
+            return Response({'detail': 'Code is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user_id, course_id = code.split('-')
+            user_id = int(user_id)
+            course_id = int(course_id)
+        except ValueError:
+            return Response({'detail': 'Invalid code format. Expected USERID-COURSEID.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'detail': f'User with ID {user_id} not found.'}, status=status.HTTP_404_NOT_FOUND)
+            
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({'detail': f'Course with ID {course_id} not found.'}, status=status.HTTP_404_NOT_FOUND)
+            
+        # Check if already enrolled
+        if Enrollment.objects.filter(user=user, course=course).exists():
+            return Response({'detail': f'User {user.username} is already enrolled in {course.title}.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Create enrollment
+        Enrollment.objects.create(
+            user=user,
+            course=course,
+            amount_paid=0.00
+        )
+        
+        return Response({'detail': f'Successfully enrolled {user.username} in {course.title}.'}, status=status.HTTP_201_CREATED)

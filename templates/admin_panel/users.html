@@ -1,10 +1,176 @@
 {% extends 'admin_panel/base.html' %}
 {% block content %}
-<div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 text-center">
-    <h3 class="text-2xl font-bold text-slate-800 mb-4">Users Management</h3>
-    <p class="text-slate-500">The users management interface is currently disabled as per your request.</p>
+<div id="tab-users" class="block">
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="text-lg font-bold text-slate-800">Users Management</h3>
+        <div class="flex items-center gap-4">
+            <div class="relative">
+                <i class="ph ph-funnel absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                <select id="roleFilter" onchange="fetchFilteredUsers()" class="pl-10 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-48 shadow-sm transition-all appearance-none cursor-pointer">
+                    <option value="all">All Roles</option>
+                    <option value="student">Student</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="openModal('slipPaymentModal')"
+                    class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow-sm flex items-center gap-2"><i
+                        class="ph ph-receipt text-lg"></i> Process Slip Payment</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold border-b border-slate-100">
+                        <th class="px-6 py-4">ID</th>
+                        <th class="px-6 py-4">User Info</th>
+                        <th class="px-6 py-4">Role</th>
+                        <th class="px-6 py-4">Connections (Courses)</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody" class="text-sm divide-y divide-slate-100"></tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<!-- Slip Payment Modal -->
+<div id="slipPaymentModal"
+    class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md transform scale-100 transition-transform">
+        <h3 class="text-2xl font-bold text-slate-900 mb-2" id="slipModalTitle">Process Slip Payment</h3>
+        <p class="text-sm text-slate-500 mb-6">Enter the reference code from the payment slip to manually enroll a user.</p>
+        
+        <form id="slipPaymentForm" onsubmit="submitSlipPayment(event)">
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Reference Code</label>
+                    <input type="text" id="slipCode" required placeholder="e.g. 12-35 (UserID-CourseID)"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none">
+                    <p class="text-xs text-slate-400 mt-2">Format: {UserID}-{CourseID}</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-8">
+                <button type="button" onclick="closeModal('slipPaymentModal')"
+                    class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+                <button type="submit" id="slipSubmitBtn"
+                    class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-emerald-700 transition-all shadow-sm">Process Enrollment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
+
 {% block scripts %}
 {{ block.super }}
+<script>
+function openModal(modalId) {
+    document.getElementById(modalId).classList.remove('hidden');
+    if (modalId === 'slipPaymentModal') {
+        document.getElementById('slipCode').value = '';
+    }
+}
+
+async function fetchFilteredUsers() {
+    const roleFilter = document.getElementById('roleFilter').value;
+    const tbody = document.getElementById('usersTableBody');
+    
+    tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-slate-500"><div class="flex justify-center items-center gap-2"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>Loading...</div></td></tr>';
+    
+    let url = 'users/admin/users/';
+    const data = await apiCall(url);
+    
+    if (data) {
+        let usersList = data.results || data;
+        
+        // Filter by role if not 'all'
+        if (roleFilter !== 'all') {
+            usersList = usersList.filter(u => u.role === roleFilter);
+        }
+        
+        state.users = usersList;
+        renderUsers();
+    } else {
+        state.users = [];
+        renderUsers();
+    }
+}
+
+function renderUsers() {
+    const tbody = document.getElementById('usersTableBody');
+    
+    if (state.users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-slate-500">No users found.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = state.users.map(u => {
+        let roleBadge = '';
+        if (u.role === 'student') roleBadge = '<span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Student</span>';
+        else if (u.role === 'teacher') roleBadge = '<span class="bg-purple-50 text-purple-600 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Teacher</span>';
+        else if (u.role === 'admin') roleBadge = '<span class="bg-rose-50 text-rose-600 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Admin</span>';
+        else roleBadge = `<span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">${u.role || 'User'}</span>`;
+
+        let connectionsHtml = '<span class="text-slate-400 text-xs italic">No connections</span>';
+        
+        if (u.role === 'student' && u.enrolled_courses && u.enrolled_courses.length > 0) {
+            connectionsHtml = u.enrolled_courses.map(c => 
+                `<span class="inline-block bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-1 rounded-md text-xs mb-1 mr-1">${c.title} (ID: ${c.id})</span>`
+            ).join('');
+        } else if (u.role === 'teacher' && u.taught_courses && u.taught_courses.length > 0) {
+            connectionsHtml = u.taught_courses.map(c => 
+                `<span class="inline-block bg-teal-50 border border-teal-100 text-teal-700 px-2 py-1 rounded-md text-xs mb-1 mr-1">${c.title} (ID: ${c.id})</span>`
+            ).join('');
+        }
+
+        return `
+        <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-6 py-4 text-slate-500 font-medium text-lg">#${u.id}</td>
+            <td class="px-6 py-4">
+                <div class="font-bold text-slate-900">${u.first_name} ${u.last_name} <span class="text-slate-500 text-sm font-normal">(@${u.username})</span></div>
+                <div class="text-xs text-slate-500">${u.email || 'No email'} &bull; ${u.phone_number || 'No phone'}</div>
+            </td>
+            <td class="px-6 py-4">${roleBadge}</td>
+            <td class="px-6 py-4">${connectionsHtml}</td>
+        </tr>
+    `}).join('');
+}
+
+async function submitSlipPayment(e) {
+    e.preventDefault();
+    const code = document.getElementById('slipCode').value;
+    
+    if (!code || !code.includes('-')) {
+        showToast('Please enter a valid code format (e.g., 12-35).', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('slipSubmitBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Processing...';
+    btn.disabled = true;
+
+    try {
+        const res = await apiCall('users/admin/users/manual-enroll/', 'POST', { code: code });
+        if (res) {
+            showToast(res.detail || 'Enrollment successful!');
+            closeModal('slipPaymentModal');
+            fetchFilteredUsers(); // Refresh the list
+        }
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    state.users = [];
+    fetchFilteredUsers();
+});
+</script>
 {% endblock %}

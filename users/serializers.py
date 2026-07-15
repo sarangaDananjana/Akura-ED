@@ -96,3 +96,32 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.phone_number = validated_data.get('phone_number', '')
         user.save()
         return user
+
+
+class AdminUserDetailSerializer(serializers.ModelSerializer):
+    enrolled_courses = serializers.SerializerMethodField()
+    taught_courses = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'is_premium',
+                  'daily_flashcard_limit', 'is_staff', 'is_active', 'profile_photo', 'role',
+                  'enrolled_courses', 'taught_courses')
+        read_only_fields = ('id',)
+
+    def get_enrolled_courses(self, obj):
+        return [
+            {
+                'id': e.course.id if e.course else (e.subcourse.id if e.subcourse else None),
+                'title': e.course.title if e.course else (e.subcourse.title if e.subcourse else 'Unknown'),
+                'type': 'course' if e.course else 'subcourse'
+            } for e in obj.enrollments.all() if e.course or e.subcourse
+        ]
+
+    def get_taught_courses(self, obj):
+        return [
+            {
+                'id': c.id,
+                'title': c.title
+            } for c in obj.taught_courses.all()
+        ]
