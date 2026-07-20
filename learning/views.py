@@ -201,9 +201,53 @@ class QuizSubmitView(APIView):
         user_id = str(request.user.id)
         session_id = request.data.get('sessionId')
         answers = request.data.get('answers', [])
+        subcourse_id = request.data.get('subcourseId')
 
         if not session_id:
             return Response({"error": "sessionId is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if session_id.startswith('offline_'):
+            if not subcourse_id:
+                return Response({"error": "subcourseId is required for offline sync."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            quiz_id = f"subcourse_{subcourse_id}"
+            
+            # Check if this offline session was already synced
+            existing_session = mongo_db['QuizSessions'].find_one({'_id': session_id, 'userId': user_id})
+            if existing_session:
+                return Response({
+                    "message": "Quiz already submitted",
+                    "totalScore": existing_session.get('totalScore', 0),
+                    "isOfficial": False
+                }, status=status.HTTP_200_OK)
+                
+            # Treat as practice session
+            existing_completed = mongo_db['QuizSessions'].find(
+                {'userId': user_id, 'quizId': quiz_id, 'status': 'completed'}
+            )
+            attempt_number = len(list(existing_completed)) + 1
+            
+            total_score = sum(1 for ans in answers if ans.get('isCorrect'))
+            now = dt_timezone.now() if hasattr(dt_timezone, 'now') else timezone.now()
+            
+            doc = {
+                '_id': session_id,
+                'userId': user_id,
+                'quizId': quiz_id,
+                'attemptNumber': attempt_number,
+                'status': 'completed',
+                'startTime': now,
+                'expiresAt': now,
+                'totalScore': total_score,
+                'answers': answers
+            }
+            mongo_db['QuizSessions'].insert_one(doc)
+            
+            return Response({
+                "message": "Offline quiz synced successfully",
+                "totalScore": total_score,
+                "isOfficial": False
+            }, status=status.HTTP_200_OK)
 
         session = mongo_db['QuizSessions'].find_one({'_id': session_id, 'userId': user_id})
         if not session:
