@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone as dt_timezone
 from django.utils import timezone
 import uuid
 from pymongo import MongoClient, UpdateOne
@@ -33,7 +33,7 @@ class FlashcardSyncView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        if not mongo_db:
+        if mongo_db is None:
             return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         user_id = str(request.user.id)
@@ -51,7 +51,7 @@ class FlashcardSyncView(APIView):
         return Response(progress_list, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
-        if not mongo_db:
+        if mongo_db is None:
             return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         user_id = str(request.user.id)
@@ -89,7 +89,7 @@ class FlashcardSyncView(APIView):
             if existing_dt:
                 # If existing_dt is offset-naive, make it timezone aware
                 if existing_dt.tzinfo is None:
-                    existing_dt = timezone.make_aware(existing_dt, timezone.utc)
+                    existing_dt = timezone.make_aware(existing_dt, dt_timezone.utc)
                 if dt < existing_dt:
                     is_newer = False
             
@@ -128,7 +128,7 @@ class QuizStartView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        if not mongo_db:
+        if mongo_db is None:
             return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         user_id = str(request.user.id)
@@ -195,7 +195,7 @@ class QuizSubmitView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        if not mongo_db:
+        if mongo_db is None:
             return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         user_id = str(request.user.id)
@@ -252,7 +252,7 @@ class QuizScoresView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        if not mongo_db:
+        if mongo_db is None:
             return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         user_id = str(request.user.id)
