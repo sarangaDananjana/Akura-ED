@@ -6,7 +6,7 @@ from .views import (
     ReadOnlyDomainViewSet, ReadOnlyCourseViewSet, ReadOnlySubCourseViewSet, ReadOnlyFlashcardViewSet,
     ReadOnlyMCQQuestionViewSet,
     ShopCourseViewSet, EnrollmentView, MyEnrollmentsView,
-    FlashcardSyncView, QuizStartView, QuizSubmitView,
+    FlashcardSyncView, QuizStartView, QuizSubmitView, QuizScoresView,
     BannerViewSet, StudentQuestionViewSet, TeacherDashboardStatsView, TeacherQuestionViewSet, TeacherCourseViewSet
 )
 
@@ -42,6 +42,7 @@ urlpatterns = [
     path('api/flashcards/sync', FlashcardSyncView.as_view(), name='flashcard-sync'),
     path('api/quiz/start', QuizStartView.as_view(), name='quiz-start'),
     path('api/quiz/submit', QuizSubmitView.as_view(), name='quiz-submit'),
+    path('api/quiz/scores', QuizScoresView.as_view(), name='quiz-scores'),
     path('admin/csv-upload/', AdminCSVUploadView.as_view(), name='admin-csv-upload'),
     path('enroll/', EnrollmentView.as_view(), name='enroll'),
     path('my-enrollments/', MyEnrollmentsView.as_view(), name='my-enrollments'),

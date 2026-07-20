@@ -18,6 +18,8 @@ services:
     # It will automatically be pulled and used as your lightweight local Mongo instance.
     image: mongo:latest
     restart: always
+    ports:
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
 

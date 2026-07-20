@@ -60,30 +60,57 @@ class FlashcardSyncView(APIView):
         if not reviews:
             return Response({"error": "No reviews provided."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Get existing flashcard progress for this user
+        flashcard_ids = [str(r.get('flashcardId')) for r in reviews if r.get('flashcardId')]
+        existing_cursor = mongo_db['FlashcardProgress'].find({
+            'userId': user_id,
+            'flashcardId': {'$in': flashcard_ids}
+        })
+        existing_map = {doc['flashcardId']: doc.get('lastReviewedAt') for doc in existing_cursor}
+
         operations = []
         for review in reviews:
             flashcard_id = str(review.get('flashcardId'))
             if not flashcard_id:
                 continue
 
-            # In a real app, you might use spaced repetition logic to determine lastReviewedAt and reviewCount.
-            update_doc = {
-                '$set': {
-                    'status': review.get('status'),
-                    'lastReviewedAt': timezone.now()
-                },
-                '$inc': {
-                    'reviewCount': 1
+            timestamp_str = review.get('timestamp')
+            if timestamp_str:
+                try:
+                    dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                except ValueError:
+                    dt = timezone.now()
+            else:
+                dt = timezone.now()
+                
+            existing_dt = existing_map.get(flashcard_id)
+            
+            is_newer = True
+            if existing_dt:
+                # If existing_dt is offset-naive, make it timezone aware
+                if existing_dt.tzinfo is None:
+                    existing_dt = timezone.make_aware(existing_dt, timezone.utc)
+                if dt < existing_dt:
+                    is_newer = False
+            
+            if is_newer:
+                existing_map[flashcard_id] = dt
+                update_doc = {
+                    '$set': {
+                        'status': review.get('status'),
+                        'lastReviewedAt': dt
+                    },
+                    '$inc': {
+                        'reviewCount': 1
+                    }
                 }
-            }
-
-            operations.append(
-                UpdateOne(
-                    {'userId': user_id, 'flashcardId': flashcard_id},
-                    update_doc,
-                    upsert=True
+                operations.append(
+                    UpdateOne(
+                        {'userId': user_id, 'flashcardId': flashcard_id},
+                        update_doc,
+                        upsert=True
+                    )
                 )
-            )
 
         if operations:
             try:
@@ -188,14 +215,10 @@ class QuizSubmitView(APIView):
         now = timezone.now()
         is_official = session['attemptNumber'] == 1
 
-        if is_official and session['expiresAt'] and now > session['expiresAt']:
-            # Mark as abandoned/expired
-            mongo_db['QuizSessions'].update_one(
-                {'_id': session_id},
-                {'$set': {'status': 'abandoned', 'totalScore': 0, 'answers': []}}
-            )
-            return Response({"error": "Time limit exceeded. Session abandoned."}, status=status.HTTP_400_BAD_REQUEST)
-
+        # The timer is now strictly managed by the client to support offline completion.
+        # We accept the submission regardless of expiresAt because if the attemptNumber is 1,
+        # it is locked, meaning they cannot retry for a new official attempt anyway.
+        
         # Calculate score locally for security (in real scenario, cross check with DB)
         # Assuming the app passes `isCorrect` for simplicity of this architectural update:
         total_score = sum(1 for ans in answers if ans.get('isCorrect'))
@@ -220,6 +243,44 @@ class QuizSubmitView(APIView):
             "totalScore": total_score,
             "isOfficial": is_official
         }, status=status.HTTP_200_OK)
+
+
+class QuizScoresView(APIView):
+    """
+    Endpoint to fetch user's highest scores for all quizzes (subcourses).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        if not mongo_db:
+            return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        user_id = str(request.user.id)
+        
+        pipeline = [
+            {'$match': {'userId': user_id, 'status': 'completed'}},
+            {'$group': {
+                '_id': '$quizId',
+                'highestScore': {'$max': '$totalScore'},
+                'officialScore': {
+                    '$max': {
+                        '$cond': [{'$eq': ['$attemptNumber', 1]}, '$totalScore', 0]
+                    }
+                }
+            }}
+        ]
+        
+        results = list(mongo_db['QuizSessions'].aggregate(pipeline))
+        scores = []
+        for r in results:
+            quiz_id = str(r['_id']).replace('subcourse_', '') # strip prefix
+            scores.append({
+                'subcourseId': quiz_id,
+                'highestScore': r.get('highestScore', 0),
+                'officialScore': r.get('officialScore', 0)
+            })
+            
+        return Response(scores, status=status.HTTP_200_OK)
 
 
 # --- Custom Admin Panel Views ---

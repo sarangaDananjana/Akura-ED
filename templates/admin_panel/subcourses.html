@@ -133,8 +133,14 @@ function openModal(modalId, isEdit = false) {
         }
 
 function renderCourses(coursesToRender) {
+            const sortedCoursesToRender = [...coursesToRender].sort((a, b) => {
+                if (a.course !== b.course) {
+                    return (a.course || 0) - (b.course || 0);
+                }
+                return (a.id || 0) - (b.id || 0);
+            });
             const tbody = document.getElementById('courseTableBody');
-            tbody.innerHTML = coursesToRender.map(c => {
+            tbody.innerHTML = sortedCoursesToRender.map(c => {
                 const parentName = state.parentcourses.find(p => p.id === c.course)?.title || 'Unknown';
                 return `
                 <tr class="hover:bg-slate-50 transition-colors">
