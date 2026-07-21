@@ -14,6 +14,9 @@
                 </select>
             </div>
             <div class="flex gap-2">
+                <button onclick="updateLeaderboard()" id="leaderboardBtn"
+                    class="bg-amber-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-amber-600 transition-all shadow-sm flex items-center gap-2"><i
+                        class="ph ph-trophy text-lg"></i> Update All Leaderboards</button>
                 <button onclick="openModal('slipPaymentModal')"
                     class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow-sm flex items-center gap-2"><i
                         class="ph ph-receipt text-lg"></i> Process Slip Payment</button>
@@ -172,5 +175,22 @@ document.addEventListener('DOMContentLoaded', () => {
     state.users = [];
     fetchFilteredUsers();
 });
+
+async function updateLeaderboard() {
+    const btn = document.getElementById('leaderboardBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i> Updating...';
+    btn.disabled = true;
+
+    try {
+        const res = await apiCall('learning/admin/update-leaderboard/', 'POST');
+        if (res) {
+            showToast(res.message || 'Leaderboard updated successfully!');
+        }
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
 </script>
 {% endblock %}

@@ -10,11 +10,12 @@ from rest_framework.response import Response
 
 import csv
 import io
-from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner
+from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner, LearningTree
 from django.db.models import Q
 from .serializers import (
     DomainSerializer, CourseSerializer, SubCourseSerializer, FlashcardSerializer,
-    MCQQuestionSerializer, MCQOptionSerializer, ShopCourseSerializer, BannerSerializer
+    MCQQuestionSerializer, MCQOptionSerializer, ShopCourseSerializer, BannerSerializer,
+    LearningTreeSerializer
 )
 
 # Initialize MongoClient globally for connection pooling across requests
@@ -137,9 +138,9 @@ class QuizStartView(APIView):
         if not quiz_id:
             return Response({"error": "quizId is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check for existing completed sessions
+        # Check for all existing sessions (including in_progress ones from abandoned attempts)
         existing_sessions = mongo_db['QuizSessions'].find(
-            {'userId': user_id, 'quizId': quiz_id, 'status': 'completed'}
+            {'userId': user_id, 'quizId': quiz_id}
         )
         existing_count = len(list(existing_sessions))
 
@@ -222,10 +223,10 @@ class QuizSubmitView(APIView):
                 }, status=status.HTTP_200_OK)
                 
             # Treat as practice session
-            existing_completed = mongo_db['QuizSessions'].find(
-                {'userId': user_id, 'quizId': quiz_id, 'status': 'completed'}
+            existing_all = mongo_db['QuizSessions'].find(
+                {'userId': user_id, 'quizId': quiz_id}
             )
-            attempt_number = len(list(existing_completed)) + 1
+            attempt_number = len(list(existing_all)) + 1
             
             total_score = sum(1 for ans in answers if ans.get('isCorrect'))
             now = dt_timezone.now() if hasattr(dt_timezone, 'now') else timezone.now()
@@ -820,3 +821,235 @@ class TeacherCourseViewSet(viewsets.ReadOnlyModelViewSet):
             return Course.objects.none()
         return Course.objects.filter(teachers=user).order_by('priority')
 
+class LearningTreeViewSet(viewsets.ModelViewSet):
+    """Read-only operations for Learning Tree."""
+    queryset = LearningTree.objects.all()
+    serializer_class = LearningTreeSerializer
+    permission_classes = [permissions.AllowAny]
+
+class LearningTreeSyncView(APIView):
+    """
+    API endpoint to sync learning tree progress.
+    Saves the user's scored points for a specific tree in MongoDB.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        if mongo_db is None:
+            return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        user_id = str(request.user.id)
+        progress_cursor = mongo_db['LearningTreeProgress'].find({'userId': user_id})
+        
+        progress_list = []
+        for doc in progress_cursor:
+            progress_list.append({
+                'treeName': doc.get('treeName'),
+                'treeMonth': doc.get('treeMonth'),
+                'scoredPoints': doc.get('scoredPoints', 0),
+                'lastUpdated': doc.get('lastUpdated')
+            })
+            
+        return Response(progress_list, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        if mongo_db is None:
+            return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        user_id = str(request.user.id)
+        
+        data = request.data
+        if not isinstance(data, list):
+            data = [data]
+            
+        operations = []
+        now = timezone.now()
+        
+        for item in data:
+            tree_name = item.get('treeName')
+            tree_month = item.get('treeMonth')
+            scored_points = item.get('scoredPoints', 0)
+            
+            if not tree_name or not tree_month:
+                continue
+                
+            update_doc = {
+                '$set': {
+                    'scoredPoints': scored_points,
+                    'lastUpdated': now
+                }
+            }
+            operations.append(
+                UpdateOne(
+                    {'userId': user_id, 'treeName': tree_name, 'treeMonth': tree_month},
+                    update_doc,
+                    upsert=True
+                )
+            )
+
+        if not operations:
+            return Response({"error": "No valid tree data provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            mongo_db['LearningTreeProgress'].bulk_write(operations, ordered=False)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({"message": "Learning tree progress synced successfully"}, status=status.HTTP_200_OK)
+
+class UpdateLeaderboardView(APIView):
+    """
+    Admin-only endpoint to aggregate first attempt quiz scores and update all leaderboards 
+    (all-time, weekly, monthly) simultaneously.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        if mongo_db is None:
+            return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        pipeline = [
+            {
+                '$match': {
+                    'attemptNumber': 1,
+                    'status': 'completed',
+                    'is_added': {'$ne': True}
+                }
+            },
+            {
+                '$group': {
+                    '_id': '$userId',
+                    'totalNewScore': {'$sum': '$totalScore'},
+                    'sessionIds': {'$push': '$_id'}
+                }
+            }
+        ]
+        
+        aggregated_results = list(mongo_db['QuizSessions'].aggregate(pipeline))
+        
+        if not aggregated_results:
+            return Response({"message": "No new first attempts to process."}, status=status.HTTP_200_OK)
+
+        user_ids = [res['_id'] for res in aggregated_results]
+
+        weekly_docs = list(mongo_db['weekly_leaderboard'].find({'userId': {'$in': user_ids}}))
+        monthly_docs = list(mongo_db['monthly_leaderboard'].find({'userId': {'$in': user_ids}}))
+
+        weekly_map = {doc['userId']: doc for doc in weekly_docs}
+        monthly_map = {doc['userId']: doc for doc in monthly_docs}
+
+        all_time_ops = []
+        weekly_ops = []
+        monthly_ops = []
+        session_ids_to_mark = []
+        
+        for result in aggregated_results:
+            user_id = result['_id']
+            new_score = result['totalNewScore']
+            session_ids = result['sessionIds']
+            
+            session_ids_to_mark.extend(session_ids)
+            
+            # All-time
+            all_time_ops.append(
+                UpdateOne(
+                    {'userId': user_id},
+                    {'$inc': {'cumulativeScore': new_score}},
+                    upsert=True
+                )
+            )
+
+            # Weekly (Keep last 7)
+            w_doc = weekly_map.get(user_id, {})
+            w_scores = w_doc.get('dailyScores', [])
+            w_scores.append(new_score)
+            w_scores = w_scores[-7:]
+            w_total = sum(w_scores)
+            weekly_ops.append(
+                UpdateOne(
+                    {'userId': user_id},
+                    {'$set': {'dailyScores': w_scores, 'cumulativeScore': w_total}},
+                    upsert=True
+                )
+            )
+
+            # Monthly (Keep last 30)
+            m_doc = monthly_map.get(user_id, {})
+            m_scores = m_doc.get('dailyScores', [])
+            m_scores.append(new_score)
+            m_scores = m_scores[-30:]
+            m_total = sum(m_scores)
+            monthly_ops.append(
+                UpdateOne(
+                    {'userId': user_id},
+                    {'$set': {'dailyScores': m_scores, 'cumulativeScore': m_total}},
+                    upsert=True
+                )
+            )
+
+        try:
+            if all_time_ops:
+                mongo_db['all_time_leaderboard'].bulk_write(all_time_ops, ordered=False)
+            if weekly_ops:
+                mongo_db['weekly_leaderboard'].bulk_write(weekly_ops, ordered=False)
+            if monthly_ops:
+                mongo_db['monthly_leaderboard'].bulk_write(monthly_ops, ordered=False)
+                
+            if session_ids_to_mark:
+                mongo_db['QuizSessions'].update_many(
+                    {'_id': {'$in': session_ids_to_mark}},
+                    {'$set': {'is_added': True}}
+                )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({"message": f"All leaderboards updated successfully for {len(aggregated_results)} users."}, status=status.HTTP_200_OK)
+
+class TopLeaderboardView(APIView):
+    """
+    Endpoint to retrieve the top 10 highest cumulative score users from all_time, monthly, and weekly leaderboards.
+    No restrictions (AllowAny).
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        if mongo_db is None:
+            return Response({"error": "MongoDB not configured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        def get_top_10(collection_name):
+            cursor = mongo_db[collection_name].find().sort('cumulativeScore', -1).limit(10)
+            return list(cursor)
+
+        all_time_top = get_top_10('all_time_leaderboard')
+        monthly_top = get_top_10('monthly_leaderboard')
+        weekly_top = get_top_10('weekly_leaderboard')
+        
+        user_ids = set()
+        for doc in all_time_top + monthly_top + weekly_top:
+            if doc.get('userId'):
+                user_ids.add(str(doc['userId']))
+                
+        user_ids_str = list(user_ids)
+        
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        django_users = User.objects.filter(id__in=user_ids_str)
+        user_map = {str(u.id): u.username for u in django_users}
+        
+        def format_results(docs):
+            res = []
+            for doc in docs:
+                uid = str(doc.get('userId'))
+                username = user_map.get(uid, f"User {uid}")
+                res.append({
+                    'username': username,
+                    'score': doc.get('cumulativeScore', 0)
+                })
+            return res
+            
+        return Response({
+            'allTime': format_results(all_time_top),
+            'monthly': format_results(monthly_top),
+            'weekly': format_results(weekly_top)
+        }, status=status.HTTP_200_OK)

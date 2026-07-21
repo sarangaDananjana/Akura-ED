@@ -50,6 +50,8 @@ urlpatterns = [
         template_name='admin_panel/mcqs.html'), name='custom-admin-mcqs'),
     path('custom-admin/users/', TemplateView.as_view(
         template_name='admin_panel/users.html'), name='custom-admin-users'),
+    path('custom-admin/learning-trees/', TemplateView.as_view(
+        template_name='admin_panel/learning_trees.html'), name='custom-admin-learning-trees'),
 
     path('teacher-panel/login/', TemplateView.as_view(
         template_name='teacher_panel/login.html'), name='teacher-panel-login'),

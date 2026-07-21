@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner, Question
+from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner, Question, LearningTree
+
+class LearningTreeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LearningTree
+        fields = '__all__'
 
 class DomainSerializer(serializers.ModelSerializer):
     class Meta:

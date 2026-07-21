@@ -144,3 +144,11 @@ class Question(models.Model):
     
     def __str__(self):
         return f"Question by {self.student.username} on {self.course.title}"
+
+class LearningTree(models.Model):
+    tree_name = models.CharField(max_length=255)
+    tree_month = models.CharField(max_length=100)
+    tree_file = models.FileField(upload_to='learning_trees/')
+
+    def __str__(self):
+        return f"{self.tree_name} - {self.tree_month}"

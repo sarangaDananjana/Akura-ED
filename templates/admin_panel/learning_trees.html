@@ -1,0 +1,154 @@
+{% extends 'admin_panel/base.html' %}
+{% block content %}
+<div id="tab-learning-trees" class="block">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">Learning Trees</h3>
+                    <div class="flex items-center gap-4">
+                        <button onclick="openModal('learningTreeModal')"
+                            class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm flex items-center gap-2"><i
+                                class="ph ph-plus-circle text-lg"></i> Add Learning Tree</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold border-b border-slate-100">
+                                    <th class="px-6 py-4 w-12"><input type="checkbox" onchange="toggleSelectAll(this, 'learning_tree')" class="w-4 h-4 text-indigo-600 rounded border-slate-300"></th>
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">Tree Name</th>
+                                    <th class="px-6 py-4">Tree Month</th>
+                                    <th class="px-6 py-4">File</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="learningTreeTableBody" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+<div id="learningTreeModal"
+        class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-2xl transform scale-100 transition-transform">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6" id="learningTreeModalTitle">Add Learning Tree</h3>
+            <form id="learningTreeForm" onsubmit="submitLearningTree(event)">
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Tree Name</label>
+                        <input type="text" id="treeName" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Tree Month</label>
+                        <input type="text" id="treeMonth" required placeholder="e.g. July 2026"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Tree File (.riv)</label>
+                        <input type="file" id="treeFile" accept=".riv"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                        <p class="text-xs text-slate-500 mt-1" id="currentFileDisplay"></p>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-8">
+                    <button type="button" onclick="closeModal('learningTreeModal')"
+                        class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+                    <button type="submit" id="learningTreeSubmitBtn"
+                        class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition-all shadow-sm">Save Learning Tree</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+function openModal(modalId, isEdit = false) { 
+            editMode = isEdit;
+            document.getElementById(modalId).classList.remove('hidden'); 
+            
+            if (modalId === 'learningTreeModal') {
+                document.getElementById('learningTreeModalTitle').innerText = isEdit ? 'Edit Learning Tree' : 'Add Learning Tree';
+                document.getElementById('learningTreeSubmitBtn').innerText = isEdit ? 'Update Tree' : 'Save Tree';
+                if (!isEdit) {
+                    document.getElementById('currentFileDisplay').innerText = '';
+                }
+            }
+        }
+
+function renderLearningTrees() {
+            const tbody = document.getElementById('learningTreeTableBody');
+            tbody.innerHTML = state.learningTrees.map(t => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4"><input type="checkbox" value="${t.id}" class="row-checkbox-learning_tree w-4 h-4 text-indigo-600 rounded border-slate-300" onchange="updateBulkDeleteBtn(\\'learning_tree\\')"></td>
+                    <td class="px-6 py-4 text-slate-500 font-medium">#${t.id}</td>
+                    <td class="px-6 py-4 font-bold text-slate-800">${t.tree_name}</td>
+                    <td class="px-6 py-4 text-slate-600">${t.tree_month}</td>
+                    <td class="px-6 py-4 text-blue-600">
+                        ${t.tree_file ? \`<a href="${t.tree_file}" target="_blank" class="hover:underline">View File</a>\` : '<span class="text-slate-400">No file</span>'}
+                    </td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <button onclick="editLearningTree(${t.id})" class="text-slate-400 hover:text-blue-500 transition-colors p-2 rounded-lg hover:bg-blue-50"><i class="ph ph-pencil-simple text-lg"></i></button>
+                        <button onclick="deleteLearningTree(${t.id})" class="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50"><i class="ph ph-trash text-lg"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+async function submitLearningTree(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('tree_name', document.getElementById('treeName').value);
+            formData.append('tree_month', document.getElementById('treeMonth').value);
+            
+            const fileInput = document.getElementById('treeFile');
+            if (fileInput.files.length > 0) {
+                formData.append('tree_file', fileInput.files[0]);
+            }
+
+            const method = editMode ? 'PUT' : 'POST';
+            const endpoint = editMode ? \`learning/learning-trees/${currentEditId}/\` : 'learning/learning-trees/';
+            
+            const res = await apiCall(endpoint, editMode ? 'PATCH' : 'POST', formData);
+            if (res) { 
+                showToast(editMode ? 'Learning Tree updated!' : 'Learning Tree added!'); 
+                closeModal('learningTreeModal'); 
+                location.reload(); 
+            }
+        }
+
+function editLearningTree(id) {
+            const t = state.learningTrees.find(x => x.id === id);
+            if(!t) return;
+            currentEditId = id;
+            document.getElementById('treeName').value = t.tree_name;
+            document.getElementById('treeMonth').value = t.tree_month;
+            if (t.tree_file) {
+                document.getElementById('currentFileDisplay').innerText = 'Current file: ' + t.tree_file.split('/').pop();
+            } else {
+                document.getElementById('currentFileDisplay').innerText = '';
+            }
+            openModal('learningTreeModal', true);
+        }
+
+async function deleteLearningTree(id) { 
+    if (confirm('Delete this Learning Tree?')) { 
+        await apiCall(\`learning/learning-trees/${id}/\`, 'DELETE'); 
+        location.reload(); 
+    } 
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const titleEl = document.getElementById('pageTitle');
+    if (titleEl) titleEl.innerText = 'Learning Trees';
+    state.learningTrees = [];
+    const data = await apiCall('learning/learning-trees/'); 
+    if(data) { 
+        state.learningTrees = data.results || data; 
+        renderLearningTrees(); 
+    }
+});
+</script>
+{% endblock %}

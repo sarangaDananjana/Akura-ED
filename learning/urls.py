@@ -7,7 +7,8 @@ from .views import (
     ReadOnlyMCQQuestionViewSet,
     ShopCourseViewSet, EnrollmentView, MyEnrollmentsView,
     FlashcardSyncView, QuizStartView, QuizSubmitView, QuizScoresView,
-    BannerViewSet, StudentQuestionViewSet, TeacherDashboardStatsView, TeacherQuestionViewSet, TeacherCourseViewSet
+    BannerViewSet, StudentQuestionViewSet, TeacherDashboardStatsView, TeacherQuestionViewSet, TeacherCourseViewSet,
+    LearningTreeViewSet, LearningTreeSyncView, UpdateLeaderboardView, TopLeaderboardView
 )
 
 router = DefaultRouter()
@@ -29,6 +30,7 @@ router.register(r'subcourses', ReadOnlySubCourseViewSet, basename='subcourses')
 router.register(r'flashcards', ReadOnlyFlashcardViewSet, basename='flashcards')
 router.register(r'mcqs', ReadOnlyMCQQuestionViewSet, basename='mcqs')
 router.register(r'banners', BannerViewSet, basename='banners')
+router.register(r'learning-trees', LearningTreeViewSet, basename='learning-trees')
 
 # Register Shop endpoints
 router.register(r'shop/courses', ShopCourseViewSet, basename='shop-courses')
@@ -40,10 +42,13 @@ router.register(r'teacher-courses', TeacherCourseViewSet, basename='teacher-cour
 
 urlpatterns = [
     path('api/flashcards/sync', FlashcardSyncView.as_view(), name='flashcard-sync'),
+    path('api/learning-trees/sync', LearningTreeSyncView.as_view(), name='learning-tree-sync'),
     path('api/quiz/start', QuizStartView.as_view(), name='quiz-start'),
     path('api/quiz/submit', QuizSubmitView.as_view(), name='quiz-submit'),
     path('api/quiz/scores', QuizScoresView.as_view(), name='quiz-scores'),
+    path('api/all-time-leaderboard/', TopLeaderboardView.as_view(), name='top-leaderboard'),
     path('admin/csv-upload/', AdminCSVUploadView.as_view(), name='admin-csv-upload'),
+    path('admin/update-leaderboard/', UpdateLeaderboardView.as_view(), name='update-leaderboard'),
     path('enroll/', EnrollmentView.as_view(), name='enroll'),
     path('my-enrollments/', MyEnrollmentsView.as_view(), name='my-enrollments'),
     path('teacher-dashboard-stats/', TeacherDashboardStatsView.as_view(), name='teacher-dashboard-stats'),

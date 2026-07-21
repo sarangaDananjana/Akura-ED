@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner, Question
+from .models import Domain, Course, SubCourse, Flashcard, MCQQuestion, MCQOption, Enrollment, Banner, Question, LearningTree
+
+@admin.register(LearningTree)
+class LearningTreeAdmin(admin.ModelAdmin):
+    list_display = ('tree_name', 'tree_month')
+    search_fields = ('tree_name', 'tree_month')
 
 @admin.register(Domain)
 class DomainAdmin(admin.ModelAdmin):
