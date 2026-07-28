@@ -96,6 +96,9 @@ async function fetchFilteredUsers() {
             usersList = usersList.filter(u => u.role === roleFilter);
         }
         
+        // Sort by ID ascending
+        usersList.sort((a, b) => a.id - b.id);
+        
         state.users = usersList;
         renderUsers();
     } else {
