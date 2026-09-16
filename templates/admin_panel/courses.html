@@ -128,8 +128,9 @@ function openModal(modalId, isEdit = false) {
         }
 
 function renderParentCourses() {
+            const sortedParentCourses = [...state.parentcourses].sort((a, b) => (a.priority || 0) - (b.priority || 0));
             const tbody = document.getElementById('parentCourseTableBody');
-            tbody.innerHTML = state.parentcourses.map(c => `
+            tbody.innerHTML = sortedParentCourses.map(c => `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4 text-slate-500 font-medium">#${c.id}</td>
                     <td class="px-6 py-4 text-slate-500 font-medium">${state.domains.find(d => d.id === c.domain)?.title || 'Unknown'}</td>

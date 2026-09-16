@@ -11,6 +11,7 @@ from rest_framework.decorators import action
 from learning.models import Course, Enrollment
 from .serializers import CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer, UserSerializer, UserCreateSerializer, AdminUserDetailSerializer
 from .utils import generate_otp_code, send_otp_sms
+import uuid
 
 User = get_user_model()
 
@@ -104,6 +105,7 @@ class ResetPasswordView(APIView):
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
         user.set_password(new_password)
+        user.auth_version = uuid.uuid4()
         user.save()
         
         # Clear the OTP from cache

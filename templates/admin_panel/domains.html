@@ -133,8 +133,9 @@ function openModal(modalId, isEdit = false) {
         }
 
 function renderDomains() {
+            const sortedDomains = [...state.domains].sort((a, b) => (a.priority || 0) - (b.priority || 0));
             const tbody = document.getElementById('domainTableBody');
-            tbody.innerHTML = state.domains.map(d => `
+            tbody.innerHTML = sortedDomains.map(d => `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4"><input type="checkbox" value="${d.id}" class="row-checkbox-domain w-4 h-4 text-indigo-600 rounded border-slate-300" onchange="updateBulkDeleteBtn(\'domain\')"></td>
                     <td class="px-6 py-4 text-slate-500 font-medium">#${d.id}</td>

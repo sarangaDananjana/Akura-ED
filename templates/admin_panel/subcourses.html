@@ -137,20 +137,35 @@ function renderCourses(coursesToRender) {
                 if (a.course !== b.course) {
                     return (a.course || 0) - (b.course || 0);
                 }
-                return (a.id || 0) - (b.id || 0);
+                return (a.priority || 0) - (b.priority || 0);
             });
             const tbody = document.getElementById('courseTableBody');
-            tbody.innerHTML = sortedCoursesToRender.map(c => {
+            
+            let html = '';
+            let currentCourseId = null;
+
+            sortedCoursesToRender.forEach(c => {
                 const parentName = state.parentcourses.find(p => p.id === c.course)?.title || 'Unknown';
-                return `
+                
+                if (c.course !== currentCourseId) {
+                    currentCourseId = c.course;
+                    html += `
+                    <tr class="bg-indigo-50/50">
+                        <td colspan="7" class="px-6 py-3 text-sm font-bold text-indigo-900 border-y border-indigo-100">
+                            Course: ${parentName}
+                        </td>
+                    </tr>
+                    `;
+                }
+
+                html += `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4"><input type="checkbox" value="${c.id}" class="row-checkbox-course w-4 h-4 text-indigo-600 rounded border-slate-300" onchange="updateBulkDeleteBtn('course')"></td>
                     <td class="px-6 py-4 text-slate-500 font-medium">#${c.id}</td>
                     <td class="px-6 py-4 text-slate-500 font-medium">${parentName}</td>
-                    <td class="px-6 py-4 text-slate-500 font-medium">${state.domains.find(d => d.id === c.domain)?.title || 'Unknown'}</td>
                     <td class="px-6 py-4 font-bold text-slate-800 flex items-center gap-3">${c.icon ? `<iconify-icon icon="${c.icon}" class="text-xl text-indigo-600"></iconify-icon>` : `<i class="ph ph-book-open text-xl text-slate-400"></i>`} ${c.title}</td>
                     <td class="px-6 py-4">
-                        <input type="number" value="${c.priority || 0}" onchange="updateParentCoursePriority(${c.id}, this.value)" class="w-20 border border-slate-200 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                        <input type="number" value="${c.priority || 0}" onchange="updateCoursePriority(${c.id}, this.value)" class="w-20 border border-slate-200 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                     </td>
                     <td class="px-6 py-4">
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-md ${c.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
@@ -163,7 +178,9 @@ function renderCourses(coursesToRender) {
                         <button onclick="deleteCourse(${c.id})" class="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50"><i class="ph ph-trash text-lg"></i></button>
                     </td>
                 </tr>
-            `}).join('');
+                `;
+            });
+            tbody.innerHTML = html;
         }
 
 async function submitCourse(e) {
