@@ -250,7 +250,22 @@ function populateCourseDropdowns() {
             const valFcFilter = flashcardFilter ? flashcardFilter.value : 'all';
             const valMcqFilter = mcqFilter ? mcqFilter.value : 'all';
 
-            const options = state.courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+            const sortedCourses = [...state.courses].sort((a, b) => {
+                if (a.course !== b.course) return (a.course || 0) - (b.course || 0);
+                return (a.priority || 0) - (b.priority || 0);
+            });
+            const grouped = sortedCourses.reduce((acc, c) => {
+                const parentName = c.course_name || (typeof state.parentcourses !== 'undefined' ? state.parentcourses.find(p => p.id === c.course)?.title : null) || 'Unknown Course';
+                if (!acc[parentName]) acc[parentName] = [];
+                acc[parentName].push(c);
+                return acc;
+            }, {});
+            let options = '';
+            for (const [parentName, courses] of Object.entries(grouped)) {
+                options += `<optgroup label="${parentName}">`;
+                options += courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+                options += `</optgroup>`;
+            }
             const filterOptions = '<option value="all">All Sub-Courses</option>' + options;
             
             if(fcCourseId) fcCourseId.innerHTML = options;
